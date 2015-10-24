@@ -16,5 +16,6 @@ var_dump([
     $r->to('/foo/bar'),
     $r->to('foo/bar'),
 ]);
+var_dump($_SERVER);
 
 exit(1);
