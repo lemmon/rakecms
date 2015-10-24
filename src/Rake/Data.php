@@ -32,12 +32,6 @@ class Data implements \ArrayAccess
     }
 
 
-    function offsetSet($offset, $value)
-    {
-    }
-
-
-    function offsetUnset($offset)
-    {
-    }
+    function offsetSet($offset, $value) {}
+    function offsetUnset($offset) {}
 }
