@@ -13,6 +13,7 @@ var_dump([
     $r->to('/'),
     $r->to('./'),
     $r->to('./foo/bar'),
+    $r->to('./test.html'),
     $r->to('/foo/bar'),
     $r->to('foo/bar'),
 ]);
