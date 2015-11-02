@@ -18,7 +18,10 @@ class Site
 
     function getPage($path, $number = NULL)
     {
-        return array_key_exists($path, self::$_pages) ? self::$_pages[$path] : self::$_pages[$path] = new Page($this, $path, $this->_site['data'][$path], $number);
+        if (!array_key_exists($path, $this->_site['data'])) {
+            throw new HttpNotFoundException;
+        }
+        return array_key_exists($path, self::$_pages) ? self::$_pages[$path] : self::$_pages[$path] = new Page($this, $this->_site['data'][$path], $number);
     }
 
 

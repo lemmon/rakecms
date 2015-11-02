@@ -2,7 +2,12 @@
 
 namespace Rake;
 
-class HttpException extends Exception
+abstract class HttpException extends Exception implements HttpExceptionInterface
 {
-    
+
+
+    function getHttpCode()
+    {
+        return $this->httpCode;
+    }
 }

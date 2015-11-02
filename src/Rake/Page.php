@@ -5,15 +5,13 @@ namespace Rake;
 class Page implements \ArrayAccess
 {
     private $_site;
-    private $_path;
     private $_page;
     private $_number;
 
 
-    function __construct(Site $site, $path, $page, $number = NULL)
+    function __construct(Site $site, $page, $number = NULL)
     {
         $this->_site = $site;
-        $this->_path = $path;
         $this->_page = $page;
         $this->_number = $number;
     }
@@ -70,12 +68,6 @@ class Page implements \ArrayAccess
     function getCaption()
     {
         return @$this->_page['data']['caption'] ?: $this->getName();
-    }
-
-
-    function getPath()
-    {
-        return $this->_page['path'];
     }
 
 
