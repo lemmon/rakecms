@@ -20,7 +20,8 @@
     "autoload": {
         "psr-4": {
             "Rake\\": "src/Rake"
-        }
+        },
+        "files": ["src/functions.php"]
     },
     "minimum-stability": "dev"
 }

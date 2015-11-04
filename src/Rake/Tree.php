@@ -25,4 +25,17 @@ class Tree
     {
         return $this->_site->queryPages($this->_page->getLocale()['id'], '*');
     }
+
+
+    function query(array $filters)
+    {
+        return new DataStack(array_filter(array_map(function($item) use ($filters) {
+            foreach ($filters as $filter => $value) {
+                if (!_filter($item->getData(), explode('.', $filter), $value)) {
+                    return FALSE;
+                }
+            }
+            return $item;
+        }, $this->_site->queryPages($this->_page->getLocale()['id'], '**'))));
+    }
 }

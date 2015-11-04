@@ -41,6 +41,12 @@ class Page implements \ArrayAccess
     }
 
 
+    function getData()
+    {
+        return $this->_page['data'];
+    }
+
+
     function getContent()
     {
         return trim(preg('/\-\-\-.*\-\-\-(.*)$/suU', file_get_contents(BASE_DIR . '/content/' . $this->getFile()))[1]);
