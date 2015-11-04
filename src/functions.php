@@ -5,9 +5,7 @@ namespace Rake;
 function filter($array, $filters) {
     return array_filter(array_map(function($item) use ($filters) {
         foreach ($filters as $filter => $value) {
-            if (!_filter($item, explode('.', $filter), $value)) {
-                return FALSE;
-            }
+            $item = _filter($item, explode('.', $filter), $value);
         }
         return $item;
     }, $array));
