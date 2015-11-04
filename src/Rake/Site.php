@@ -34,7 +34,7 @@ class Site
     function queryPages($locale_id, $mask = '*')
     {
         $mask = str_replace('**', '.+', $mask);
-        $mask = str_replace('*', '[^/]+', $mask);
+        $mask = str_replace('*', '[^/]*', $mask);
         $res = [];
         foreach ($this->_site['tree'][$locale_id] as $item) {
             if (preg_match("#^/$mask$#", $item)) {
