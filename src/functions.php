@@ -2,10 +2,22 @@
 
 namespace Rake;
 
+//
+// preg
+
+function preg($pattern, $subject)
+{
+    preg_match($pattern, $subject, $m);
+    return $m;
+}
+
+//
+// filter
+
 function filter($array, $filters) {
     return array_filter(array_map(function($item) use ($filters) {
         foreach ($filters as $filter => $value) {
-            if (!_filter($item, explode('.', $filter), $value)) {
+            if (!($item = _filter($item, explode('.', $filter), $value))) {
                 return FALSE;
             }
         }
