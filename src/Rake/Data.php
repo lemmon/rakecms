@@ -14,7 +14,7 @@ class Data implements \ArrayAccess
     {
         $this->_page = $page;
         $this->_base = [
-            BASE_DIR . '/data/',
+            BASE_DIR . '/content/',
             BASE_DIR . '/content/' . $page->getLocale()['dir'],
             BASE_DIR . '/content/' . $page->getDir(),
         ];
