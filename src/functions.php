@@ -14,17 +14,6 @@ function preg($pattern, $subject)
 //
 // filter
 
-function filter($array, $filters) {
-    return array_filter(array_map(function($item) use ($filters) {
-        foreach ($filters as $filter => $value) {
-            if (!($item = _filter($item, explode('.', $filter), $value))) {
-                return FALSE;
-            }
-        }
-        return $item;
-    }, $array));
-}
-
 function _filter(array $item, array $filter, $value) {
     $current = array_shift($filter);
     if ('*' == $current) {

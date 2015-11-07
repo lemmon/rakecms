@@ -32,11 +32,11 @@ class Data implements \ArrayAccess
 
     function offsetGet($offset)
     {
-        return array_replace_recursive(
+        return new DataStack(array_replace_recursive(
             file_exists($this->_base[0] . '/' . $offset . '.yml') ? Yaml::parse(file_get_contents($this->_base[0] . '/' . $offset . '.yml')) : [],
             file_exists($this->_base[2] . '/' . $offset . '.yml') ? Yaml::parse(file_get_contents($this->_base[2] . '/' . $offset . '.yml'))
                 : (file_exists($this->_base[1] . '/' . $offset . '.yml') ? Yaml::parse(file_get_contents($this->_base[1] . '/' . $offset . '.yml')) : [])
-        );
+        ));
     }
 
 
