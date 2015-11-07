@@ -2,7 +2,7 @@
 
 namespace Rake;
 
-class DataStack implements \Iterator
+class DataStack implements \Iterator, \ArrayAccess
 {
     private $_data;
     private $_keys;
@@ -27,7 +27,7 @@ class DataStack implements \Iterator
 
     function shuffle()
     {
-        $keys = array_keys($this->_data);
+        $keys = $this->_keys;
         shuffle($keys);
         $res = [];
         foreach ($keys as $key) {
@@ -54,6 +54,7 @@ class DataStack implements \Iterator
         $this->_i = 0;
     }
 
+
     function current()
     {
         return $this->_data[$this->_keys[$this->_i]];
@@ -76,6 +77,22 @@ class DataStack implements \Iterator
     function valid() {
         return isset($this->_keys[$this->_i]);
     }
+
+
+    function offsetExists($offset)
+    {
+        return array_key_exists($offset, $this->_data);
+    }
+
+
+    function offsetGet($offset)
+    {
+        return is_array($res = $this->_data[$offset]) ? new self($res) : $res;
+    }
+
+
+    function offsetSet($offset, $value) {}
+    function offsetUnset($offset) {}
 
 
     /*
