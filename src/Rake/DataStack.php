@@ -21,17 +21,18 @@ class DataStack implements \Iterator, \ArrayAccess
 
     function getFirst()
     {
-        return $this->_data[$this->_keys[0]];
+        return $this->_data ? $this->_data[$this->_keys[0]] : NULL;
     }
 
 
     function shuffle()
     {
-        $keys = $this->_keys;
-        shuffle($keys);
         $res = [];
-        foreach ($keys as $key) {
-            $res[$key] = $this->_data[$key];
+        if ($keys = $this->_keys) {
+            shuffle($keys);
+            foreach ($keys as $key) {
+                $res[$key] = $this->_data[$key];
+            }
         }
         return new self($res);
     }
