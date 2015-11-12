@@ -141,7 +141,7 @@ class Router implements \ArrayAccess
                 $res = NULL;
             }
             //
-            return ((is_string($res) or is_int($res)) and !empty($res)) ? $res : $m['keep'];
+            return ((is_string($res) or is_int($res)) and !empty($res)) ? $res : (isset($m['keep']) ? $m['keep'] : '');
         }, $link);
         
         // paste current route params
