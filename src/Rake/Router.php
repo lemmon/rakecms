@@ -104,7 +104,8 @@ class Router implements \ArrayAccess
         }, $link);
         
         // match link variables with params
-        $link = preg_replace_callback('#(?<keep>@)?({((?<match>[\w\.]+)|%(?<arg>\d+))(=(?<default>\w+))?}|%(?<arg0>\d+))#', function($m) use ($args){
+        
+        $link = preg_replace_callback('#((?<!\\\)?<keep>@)?({((?<match>[\w\.]+)|%(?<arg>\d+))(=(?<default>\w+))?}|%(?<arg0>\d+))#', function($m) use ($args){
             // argument
             $res = !empty($args) ? $args[(($i = (int)@$m['arg0'] or $i = (int)@$m['arg']) and isset($args[$i - 1])) ? $i - 1 : 0] : '';
             // match
@@ -123,8 +124,8 @@ class Router implements \ArrayAccess
                         break;
                     }
                 }
-                if (is_string($_res) or is_int($_res)) {
-                    $res = $_res;
+                if (is_string($_res) or is_numeric($_res)) {
+                    $res = strval($_res);
                 } elseif (is_object($_res) and method_exists($_res, '__toString')) {
                     $res = $_res->__toString();
                 } else {
@@ -152,6 +153,7 @@ class Router implements \ArrayAccess
                 }
             }
             $link = join('/', $link);
+            $link = str_replace('\\@', '@', $link);
         }
         
         //
