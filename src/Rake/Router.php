@@ -98,6 +98,22 @@ class Router implements \ArrayAccess
 
     public function to($link, ...$args)
     {
+        // validate link
+        while (is_string($link) and ':' == $link{0}) {
+            switch ($link) {
+                case ':self': return $this->getSelf();
+                case ':root': return $this->getRoot();
+                case ':home': return $this->getHome();
+                default:
+                    if (isset($this->_definedLinks[$link])) {
+                        $link = $this->_definedLinks[$link];
+                    } else {
+                        trigger_error(sprintf('Route not defined (%s)', $link));
+                        return '#';
+                    }
+            }
+        }
+
         // chained arguments
         $link = preg_replace_callback('#%(?<from>\d+)(?<sep>.)?\.\.(%?(?<to>\d+))?#', function($m) use ($args) {
             return '%' . join(@$m['sep'] . '%', range($m['from'], @$m['to'] ?: count($args)));
