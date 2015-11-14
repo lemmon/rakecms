@@ -20,9 +20,9 @@ class Router implements \ArrayAccess
     {
         preg_match('#^(.*/)([^/]+\.php)$#', $_SERVER['SCRIPT_NAME'], $m);
         $this->_options = $o = array_merge($this->_options, $options ?: []);
-        $this->_root = @$o['root'] ?: $m[1];
-        $this->_routePrefix = @$o['route_prefix'] ?: ((FALSE === @$o['mod_rewrite']) ? $m[2] . '/' : '');
-        $this->_route = @$o['route'] ?: trim(@$_SERVER['PATH_INFO'], '/');
+        $this->_root = isset($o['root']) ? $o['root'] : $m[1];
+        $this->_routePrefix = isset($o['route_prefix']) ? $o['route_prefix'] : ((FALSE === @$o['mod_rewrite']) ? $m[2] . '/' : '');
+        $this->_route = isset($o['route']) ? $o['route'] : trim(@$_SERVER['PATH_INFO'], '/');
         $this->_params = explode('/', $this->_route);
     }
 
