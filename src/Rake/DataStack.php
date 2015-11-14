@@ -25,6 +25,18 @@ class DataStack implements \Iterator, \ArrayAccess
     }
 
 
+    function getArray()
+    {
+        return $this->_data;
+    }
+
+
+    function getJson()
+    {
+        return json_encode($this->_data);
+    }
+
+
     function shuffle()
     {
         $res = [];
