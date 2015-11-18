@@ -23,19 +23,18 @@ class Tree
 
     function getPages()
     {
-        return $this->_site->queryPages($this->_page->getLocale()['id'], '*');
+        return $this->_site->query('tree', $this->_page->getLocale()['id'], '*');
+    }
+
+
+    function getPosts()
+    {
+        return new Posts($this->_site->query('@posts', $this->_page->getLocale()['id'], '**'));
     }
 
 
     function query(array $filters)
     {
-        return new DataStack(array_filter(array_map(function($item) use ($filters) {
-            foreach ($filters as $filter => $value) {
-                if (!_filter($item->getData(), explode('.', $filter), $value)) {
-                    return FALSE;
-                }
-            }
-            return $item;
-        }, $this->_site->queryPages($this->_page->getLocale()['id'], '**'))));
+        return (new DataStack($this->_site->query('tree', $this->_page->getLocale()['id'], '**')))->filter($filters);
     }
 }

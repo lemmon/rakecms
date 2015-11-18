@@ -14,15 +14,18 @@ function preg($pattern, $subject)
 //
 // filter
 
-function _filter(array $item, array $filter, $value) {
+function _filter($item, array $filter, $value) {
+    if (!is_array_like($item)) {
+        return FALSE;
+    }
     $current = array_shift($filter);
     if ('*' == $current) {
         return array_filter(array_map(function($item) use ($filter, $value) {
             return _filter($item, $filter, $value);
         }, $item));
-    } elseif (array_key_exists($current, $item)) {
+    } elseif (isset($item[$current])) {
         if ($filter) {
-            if (is_array($item[$current]) and $res = _filter($item[$current], $filter, $value)) {
+            if (is_array_like($item[$current]) and $res = _filter($item[$current], $filter, $value)) {
                 $item[$current] = $res;
                 return $item;
             } else {
@@ -36,4 +39,12 @@ function _filter(array $item, array $filter, $value) {
     } else {
         return FALSE;
     }
+}
+
+//
+// arrays
+
+function is_array_like($item)
+{
+    return is_array($item) or (is_object($item) and $item instanceof \ArrayAccess);
 }

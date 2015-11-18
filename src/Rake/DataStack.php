@@ -50,7 +50,8 @@ class DataStack implements \Iterator, \ArrayAccess
     }
 
 
-    function filter($filters) {
+    function filter($filters)
+    {
         return new self(array_filter(array_map(function($item) use ($filters) {
             foreach ($filters as $filter => $value) {
                 if (!($item = _filter($item, explode('.', $filter), $value))) {
