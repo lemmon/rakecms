@@ -65,7 +65,7 @@ class DataStack implements \Iterator, \ArrayAccess, \Countable
 
     function count()
     {
-        return $n;
+        return $this->_n;
     }
 
 

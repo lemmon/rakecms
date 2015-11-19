@@ -1,7 +1,172 @@
 #!/usr/bin/php
 <?php
 
-#include __DIR__ . '/../bootstrap.php';
-#(new Rake\Scraper)->scrape();
+namespace Rake;
+require getcwd() . '/bootstrap.php';
 
-echo phpversion(), PHP_EOL;
+//
+// options
+$optin = getopt('h', ['help', 'build']);
+$options = [
+    'build' => FALSE,
+];
+
+if (isset($optin['h']) or isset($optin['help'])) {
+    __displayHelp();
+    exit(1);
+} else {
+    if (isset($optin['build'])) $options['build'] = TRUE;
+    __scrape($options);
+}
+
+//
+// help
+function __displayHelp()
+{
+    echo "\033[0;33mUsage:", PHP_EOL;
+    echo "\033[0;37m  command [options]", PHP_EOL;
+    echo PHP_EOL;
+    echo "\033[0;33mOptions:", PHP_EOL;
+    echo "\033[0;32m  -h, --help\033[0;37m  Display this help message", PHP_EOL;
+    echo "\033[0;32m  --build\033[0;37m     Build static html files", PHP_EOL;
+    echo "\033[0;37m";
+}
+
+//
+// scrape
+function __scrape(array $o = [])
+{
+    $t = -microtime(TRUE);
+    $site = [];
+    $root = BASE_DIR . '/content';
+
+    // go through locales
+    foreach (glob($root . '/*') as $i => $item) {
+        $i = 0;
+        $base = basename($item);
+        $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
+        if ('_' == $base{0} or !is_dir($item)) {
+            continue;
+        }
+        $site['l10n'][$locale_id] = $locale = [
+            'id'      => $locale_id,
+            'dir'     => $base,
+            'active'  => !('_' == $base{0}),
+            'primary' => !(bool)$i,
+        ];
+        echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
+        // go through files
+        __tree($item, function($file, $link, $ns) use (&$site, $locale, $root, &$i, $o) {
+            $path = ($i or $ns) ? $link : '';
+            $data = __data($file);
+            $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
+            echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
+            if ((!isset($data['state']) or !in_array($data['state'], ['draft', 'hidden'])) and !isset($ns)) {
+                $site['tree'][$locale_id][] = '/' . $path;
+            }
+            $site['data']['/' . $path] = [
+                'l10n' => $locale['id'],
+                'path' => $path,
+                'href' => $path ? $path . '.html' : ':home',
+                'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
+                'file' => substr($file, strlen($root) + 1),
+                'time' => filemtime($file),
+                'data' => $data,
+                'type' => $ns,
+            ];
+            if ($ns) {
+                $site[$ns][$locale_id][] = '/' . $path;
+            }
+            if ($o['build']) {
+                $_file = BASE_DIR . '/public/' . strtr($link, ['/' => DIRECTORY_SEPARATOR]) . '.html';
+                #echo "   \033[1;30m" ."/{$path}". "\033[0;37m", PHP_EOL;
+                #echo "   \033[1;30m" .dirname($_file). "\033[0;37m", PHP_EOL;
+                if (!is_dir($_ = dirname($_file))) {
+                    mkdir($_, 0755, TRUE);
+                }
+                $_router = new \Rake\Router([
+                    'root' => '/',
+                    'route_prefix' => '',
+                    'route' => $path,
+                ]);
+                $_site = new \Rake\Site($_router);
+                $_item = $_site->getItem("/{$path}");
+                $_page = $_item->getPage();
+                file_put_contents($_file, template($_router, $_item->getTemplate(), array_replace($_item instanceof Page ? [] : [strtolower(substr(get_class($_item), 5)) => $_item], [
+                    'site' => $_site,
+                    'page' => $_page,
+                    'tree' => new \Rake\Tree($_item),
+                    'data' => new \Rake\Data($_item),
+                ])));
+                
+                /*
+                dump([
+                    $_router->to('foo/bar'),
+                    $_router->to('./foo/bar'),
+                ]);
+                die;
+                */
+                
+                unset($_file);
+                unset($_router);
+                unset($_site);
+                unset($_item);
+                unset($_page);
+            }
+            $i++;
+        });
+    }
+
+    // save results
+    file_put_contents(BASE_DIR . '/build/site.json', json_encode($site, JSON_PRETTY_PRINT));
+
+    // notice
+    echo "\033[0;32mScrape okay \033[1;30m(took " .round((microtime(TRUE) + $t) * 1000, 2). "ms)\033[1;37m" . PHP_EOL;
+}
+
+// travest pages
+function __tree($dir, $callback, $level = [], $ns = NULL) {
+    $l = strlen($dir) + 1;
+    $i = 0;
+    $glob = glob($dir . '/*');
+    usort($glob, function($a, $b){
+        $a = basename($a);
+        $b = basename($b);
+        if ('@' == $a{0} and '@' != $b{0}) return +1;
+        if ('@' == $b{0} and '@' != $a{0}) return -1;
+        return strcmp($a, $b);
+    });
+    foreach($glob as $file) {
+        $name = basename($file);
+        if ('_' === $name{0}) {
+            continue;
+        }
+        if ('@' != $name{0}) {
+            preg_match('/^(?:(\d{1,3})_)?([a-z_]+)(?:\.(\w+))?/', $name, $m);
+            $slug = strtolower(strtr($m[2], '_', '-'));
+            if (is_dir($file)) {
+                __tree($file, $callback, array_merge($level, [$slug]), $ns);
+            } else {
+                $type = strtolower($m[3]);
+                if ('txt' === $type) {
+                    $callback($file, join(($i or $ns) ? array_merge($level, [$slug]) : $level, '/'), $ns);
+                } else {
+                    continue;
+                }
+            }
+            $i++;
+        } else {
+            $slug = substr($name, 1);
+            __tree($file, $callback, $level, $name);
+        }
+    }
+}
+
+// parse data from page
+function __data($file) {
+    $data = file_get_contents($file);
+    $data = @preg('/\-\-\-\s+(.*)\-\-\-/suU', $data)[1];
+    $data = \Symfony\Component\Yaml\Yaml::parse($data) ?: [];
+    unset($data['number']);
+    return $data;
+}

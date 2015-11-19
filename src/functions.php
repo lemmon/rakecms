@@ -48,3 +48,56 @@ function is_array_like($item)
 {
     return is_array($item) or (is_object($item) and $item instanceof \ArrayAccess);
 }
+
+//
+// rake
+
+function rake()
+{
+    // router
+    $router = new \Rake\Router(config()['router']);
+    // display page
+    #try {
+        $site = new \Rake\Site($router);
+        $router->match('({link}(.{pageno}).html)', ['link' => '[a-z\-/]+', 'pageno' => '\d+'], function($router, $m) use ($site) {
+            $item = $site->getItem('/' . @$m['link'], isset($m['pageno']) ? intval($m['pageno']) : NULL);
+            $page = $item->getPage();
+            $res = template($router, $item->getTemplate(), array_replace($item instanceof \Rake\Page ? [] : [strtolower(substr(get_class($item), 5)) => $item], [
+                'site' => $site,
+                'page' => $page,
+                'tree' => new \Rake\Tree($item),
+                'data' => new \Rake\Data($item),
+            ]));
+            echo $res;
+            exit(1);
+        });
+        throw new \Rake\HttpNotFoundException;
+    #} catch (\Rake\HttpException $e) {
+    #    die('-- 404 --');
+    #}
+}
+
+//
+// template
+
+function template($router, $name, $data)
+{
+    // loader
+    $loader = new \Twig_Loader_Filesystem(BASE_DIR . '/templates');
+    // twig
+    $twig = new \Twig_Environment($loader, [
+        'cache' => BASE_DIR . '/cache/tpl',
+        'auto_reload' => TRUE,
+    ]);
+    // filters
+    $twig->addFilter(new \Twig_SimpleFilter('dump', function($stdin) { dump($stdin); }));
+    $twig->addFilter(new \Twig_SimpleFilter('tNum', function($number, $dec = 0) { return number_format($number, $dec, ',', ' '); }));
+    $twig->addFilter(new \Twig_SimpleFilter('tDateTime', function($ts) { return date('Y/m/d H:i', strtotime($ts)); }));
+    $twig->addFilter(new \Twig_SimpleFilter('md', function($md) { return \Michelf\Markdown::defaultTransform($md); }, ['is_safe' => ['html']]));
+    $twig->addFilter(new \Twig_SimpleFilter('json', function($in) { return json_encode(iterator_to_array($in)); }, ['is_safe' => ['html']]));
+    // functions
+    $twig->addFunction(new \Twig_SimpleFunction('link_to', function($_) use ($router){ return call_user_func_array([$router, 'to'], func_get_args()); }));
+    $twig->addFunction(new \Twig_SimpleFunction('link_*', function($name, ...$args) use ($router){ return call_user_func_array([$router, 'get' . $name], $args); }));
+    // render
+    return $twig->render($name . '.twig.html', $data);
+}
