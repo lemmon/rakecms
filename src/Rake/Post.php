@@ -6,8 +6,12 @@ class Post extends Page
 {
 
 
-    function xoxo()
+    function getAbstract()
     {
-        return '1';
+        $res = $this->getContent();
+        if ($i = strpos($res, '<!-- more -->')) {
+            $res = substr($res, 0, $i);
+        }
+        return $res;
     }
 }

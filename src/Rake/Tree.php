@@ -21,9 +21,9 @@ class Tree
     }
 
 
-    function getPages()
+    function getPages($query = '*')
     {
-        return $this->_site->query('tree', $this->_page->getLocale()['id'], '*');
+        return new DataStack($this->_site->query('tree', $this->_page->getLocale()['id'], $query));
     }
 
 
@@ -35,6 +35,6 @@ class Tree
 
     function query(array $filters)
     {
-        return (new DataStack($this->_site->query('tree', $this->_page->getLocale()['id'], '**')))->filter($filters);
+        return $this->getPages('**')->filter($filters);
     }
 }

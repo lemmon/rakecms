@@ -21,7 +21,13 @@ class Site
         if (!array_key_exists($path, $this->_site['data'])) {
             throw new HttpNotFoundException;
         }
-        return array_key_exists($path, self::$_pages) ? self::$_pages[$path] : self::$_pages[$path] = new Page($this, $this->_site['data'][$path], $number);
+        if (array_key_exists($path, self::$_pages)) {
+            return self::$_pages[$path];
+        } else {
+            $res = $this->_site['data'][$path];
+            $obj = __NAMESPACE__ . '\\' . (isset($res['type']) ? ucfirst(substr($res['type'], 1, -1)) : 'Page');
+            return self::$_pages[$path] = new $obj($this, $res, $number);
+        }
     }
 
 

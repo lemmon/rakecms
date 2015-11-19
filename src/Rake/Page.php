@@ -5,14 +5,14 @@ namespace Rake;
 class Page implements \ArrayAccess
 {
     private $_site;
-    private $_page;
+    private $_item;
     private $_number;
 
 
-    function __construct(Site $site, $page, $number = NULL)
+    function __construct(Site $site, $item, $number = NULL)
     {
         $this->_site = $site;
-        $this->_page = $page;
+        $this->_item = $item;
         $this->_number = $number;
     }
 
@@ -31,7 +31,7 @@ class Page implements \ArrayAccess
 
     function getFile()
     {
-        return $this->_page['file'];
+        return $this->_item['file'];
     }
 
 
@@ -43,7 +43,7 @@ class Page implements \ArrayAccess
 
     function getData()
     {
-        return $this->_page['data'];
+        return $this->_item['data'];
     }
 
 
@@ -55,43 +55,43 @@ class Page implements \ArrayAccess
 
     function getLocale()
     {
-        return $this->_site->getLocale($this->_page['l10n']);
+        return $this->_site->getLocale($this->_item['l10n']);
     }
 
 
     function getTemplate()
     {
-        return @$this->_page['data']['template'] ?: 'default';
+        return @$this->_item['data']['template'] ?: 'default';
     }
 
 
     function getName()
     {
-        return @$this->_page['data']['name'] ?: $this->_page['name'];
+        return @$this->_item['data']['name'] ?: $this->_item['name'];
     }
 
 
     function getCaption()
     {
-        return @$this->_page['data']['caption'] ?: $this->getName();
+        return @$this->_item['data']['caption'] ?: $this->getName();
     }
 
 
     function getHref()
     {
-        return $this->_site->getRouter()->to($this->_page['href']);
+        return $this->_site->getRouter()->to($this->_item['href']);
     }
 
 
     function offsetExists($name)
     {
-        return isset($this->_page['data'][$name]);
+        return isset($this->_item['data'][$name]);
     }
 
 
     function offsetGet($name)
     {
-        return $this->_page['data'][$name];
+        return method_exists($this, $_ = 'get' . ucfirst($name)) ? $this->{$_}() : $this->_item['data'][$name];
     }
 
 

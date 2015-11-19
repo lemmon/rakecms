@@ -2,7 +2,7 @@
 
 namespace Rake;
 
-class DataStack implements \Iterator, \ArrayAccess
+class DataStack implements \Iterator, \ArrayAccess, \Countable
 {
     private $_data;
     private $_keys;
@@ -21,7 +21,7 @@ class DataStack implements \Iterator, \ArrayAccess
 
     function getFirst()
     {
-        return $this->_data ? $this->_data[$this->_keys[0]] : NULL;
+        return $this->_data ? $this->offsetGet($this->_keys[0]) : NULL;
     }
 
 
@@ -46,13 +46,13 @@ class DataStack implements \Iterator, \ArrayAccess
                 $res[$key] = $this->_data[$key];
             }
         }
-        return new self($res);
+        return new $this($res);
     }
 
 
     function filter($filters)
     {
-        return new self(array_filter(array_map(function($item) use ($filters) {
+        return new $this(array_filter(array_map(function($item) use ($filters) {
             foreach ($filters as $filter => $value) {
                 if (!($item = _filter($item, explode('.', $filter), $value))) {
                     return FALSE;
@@ -60,6 +60,12 @@ class DataStack implements \Iterator, \ArrayAccess
             }
             return $item;
         }, $this->_data)));
+    }
+
+
+    function count()
+    {
+        return $n;
     }
 
 
