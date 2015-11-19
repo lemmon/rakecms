@@ -16,7 +16,7 @@ class Site
     }
 
 
-    function getPage($path, $number = NULL)
+    function getItem($path, $number = NULL)
     {
         if (!array_key_exists($path, $this->_site['data'])) {
             throw new HttpNotFoundException;
@@ -44,7 +44,7 @@ class Site
         $res = [];
         foreach ($this->_site[$what][$locale_id] as $item) {
             if (preg_match("#^/$mask$#", $item)) {
-                $res[] = $this->getPage($item);
+                $res[] = $this->getItem($item);
             }
         }
         return $res;

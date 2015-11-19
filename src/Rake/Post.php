@@ -2,7 +2,7 @@
 
 namespace Rake;
 
-class Post extends Page
+class Post extends AbstractItem
 {
 
 

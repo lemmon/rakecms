@@ -1,0 +1,7 @@
+#!/usr/bin/php
+<?php
+
+#include __DIR__ . '/../bootstrap.php';
+#(new Rake\Scraper)->scrape();
+
+echo phpversion(), PHP_EOL;

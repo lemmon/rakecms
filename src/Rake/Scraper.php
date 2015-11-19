@@ -13,6 +13,32 @@ class Scraper
 
     function scrape()
     {
+        $o = getopt('h', ['help', 'static']);
+        
+        //
+        if (isset($o['h']) or isset($o['help'])) {
+            $this->_help();
+        } else {
+            $this->_scrape();
+        }
+    }
+
+
+    private function _help()
+    {
+        echo "\033[0;33mUsage:", PHP_EOL;
+        echo "\033[0;37m  command [options]", PHP_EOL;
+        echo PHP_EOL;
+        echo "\033[0;33mOptions:", PHP_EOL;
+        echo "\033[0;32m  -h, --help\033[0;37m  Display this help message", PHP_EOL;
+        echo "\033[0;32m  --static\033[0;37m    Build static html files", PHP_EOL;
+        echo "\033[0;37m";
+    }
+
+
+    private function _scrape()
+    {
+        $t = -microtime(TRUE);
         $site = [];
         $root = BASE_DIR . '/content';
 
@@ -30,13 +56,13 @@ class Scraper
                 'active'  => !('_' == $base{0}),
                 'primary' => !(bool)$i,
             ];
-            echo 'Locale: ' . $locale_id . PHP_EOL;
-            $this->_tree($item, function($file, $link, $type) use (&$site, $locale, $root, &$i) {
-                $path = ($i or $type) ? $link : '';
+            echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
+            $this->_tree($item, function($file, $link, $ns) use (&$site, $locale, $root, &$i) {
+                $path = ($i or $ns) ? $link : '';
                 $data = $this->_data($file);
                 $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
-                echo ' - ' . $link . ($type ? " ({$type})" : '') . PHP_EOL;
-                if ((!isset($data['state']) or !in_array($data['state'], ['draft', 'hidden'])) and !isset($type)) {
+                echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
+                if ((!isset($data['state']) or !in_array($data['state'], ['draft', 'hidden'])) and !isset($ns)) {
                     $site['tree'][$locale_id][] = '/' . $path;
                 }
                 $site['data']['/' . $path] = [
@@ -47,10 +73,10 @@ class Scraper
                     'file' => substr($file, strlen($root) + 1),
                     'time' => filemtime($file),
                     'data' => $data,
-                    'type' => $type,
+                    'type' => $ns,
                 ];
-                if ($type) {
-                    $site[$type][$locale_id][] = '/' . $path;
+                if ($ns) {
+                    $site[$ns][$locale_id][] = '/' . $path;
                 }
                 $i++;
             });
@@ -60,7 +86,7 @@ class Scraper
         file_put_contents(BASE_DIR . '/build/site.json', json_encode($site, JSON_PRETTY_PRINT));
 
         // notice
-        echo 'Parse Ok' . PHP_EOL;
+        echo "\033[0;32mScrape okay \033[1;30m(took " .round((microtime(TRUE) + $t) * 1000, 2). "ms)\033[1;37m" . PHP_EOL;
     }
 
 
@@ -68,7 +94,15 @@ class Scraper
     private function _tree($dir, $callback, $level = [], $ns = NULL) {
         $l = strlen($dir) + 1;
         $i = 0;
-        foreach(glob($dir . '/*') as $file) {
+        $glob = glob($dir . '/*');
+        usort($glob, function($a, $b){
+            $a = basename($a);
+            $b = basename($b);
+            if ('@' == $a{0} and '@' != $b{0}) return +1;
+            if ('@' == $b{0} and '@' != $a{0}) return -1;
+            return strcmp($a, $b);
+        });
+        foreach($glob as $file) {
             $name = basename($file);
             if ('_' === $name{0}) {
                 continue;

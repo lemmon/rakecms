@@ -10,7 +10,7 @@ class Data implements \ArrayAccess
     private $_base;
 
 
-    function __construct(Page $page)
+    function __construct(AbstractItem $page)
     {
         $this->_page = $page;
         $this->_base = [
