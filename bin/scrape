@@ -2,20 +2,29 @@
 <?php
 
 namespace Rake;
-require getcwd() . '/bootstrap.php';
 
 //
 // options
-$optin = getopt('h', ['help', 'build']);
+$optin = getopt('bd:h', ['help', 'build']);
 $options = [
     'build' => FALSE,
 ];
+
+//
+// dir
+if (isset($optin['d'])) {
+    $root = realpath(('/' == $optin['d']{0} ? '' : getcwd() . '/') . $optin['d']);
+} else {
+    $root = getcwd();
+}
+
+require $root . '/bootstrap.php';
 
 if (isset($optin['h']) or isset($optin['help'])) {
     __displayHelp();
     exit(1);
 } else {
-    if (isset($optin['build'])) $options['build'] = TRUE;
+    if (isset($optin['b']) or isset($optin['build'])) $options['build'] = TRUE;
     __scrape($options);
 }
 
@@ -27,8 +36,9 @@ function __displayHelp()
     echo "\033[0;37m  command [options]", PHP_EOL;
     echo PHP_EOL;
     echo "\033[0;33mOptions:", PHP_EOL;
-    echo "\033[0;32m  -h, --help\033[0;37m  Display this help message", PHP_EOL;
-    echo "\033[0;32m  --build\033[0;37m     Build static html files", PHP_EOL;
+    echo "\033[0;32m  -h, --help\033[0;37m     Display this help message", PHP_EOL;
+    echo "\033[0;32m  -b, --build\033[0;37m    Build static html files", PHP_EOL;
+    echo "\033[0;32m  -d <dir>\033[0;37m       Specify working directory", PHP_EOL;
     echo "\033[0;37m";
 }
 
@@ -79,16 +89,18 @@ function __scrape(array $o = [])
             }
             if ($o['build']) {
                 $_file = BASE_DIR . '/public/' . strtr($link, ['/' => DIRECTORY_SEPARATOR]) . '.html';
-                #echo "   \033[1;30m" ."/{$path}". "\033[0;37m", PHP_EOL;
-                #echo "   \033[1;30m" .dirname($_file). "\033[0;37m", PHP_EOL;
                 if (!is_dir($_ = dirname($_file))) {
                     mkdir($_, 0755, TRUE);
                 }
-                $_router = new \Rake\Router([
-                    'root' => '/',
+                //
+                $_router = new \Rake\Router(array_replace([
+                    'root' => FALSE,
+                    'root' => './',
                     'route_prefix' => '',
+                    'prefix' => '',
+                ], @config()['router'] ?: [], [
                     'route' => $path,
-                ]);
+                ]));
                 $_site = new \Rake\Site($_router);
                 $_item = $_site->getItem("/{$path}");
                 $_page = $_item->getPage();
@@ -98,15 +110,7 @@ function __scrape(array $o = [])
                     'tree' => new \Rake\Tree($_item),
                     'data' => new \Rake\Data($_item),
                 ])));
-                
-                /*
-                dump([
-                    $_router->to('foo/bar'),
-                    $_router->to('./foo/bar'),
-                ]);
-                die;
-                */
-                
+                //
                 unset($_file);
                 unset($_router);
                 unset($_site);

@@ -55,7 +55,7 @@ function is_array_like($item)
 function rake()
 {
     // router
-    $router = new \Rake\Router(config()['router']);
+    $router = new \Rake\Router(@config()['router'] ?: []);
     // display page
     #try {
         $site = new \Rake\Site($router);
@@ -90,11 +90,24 @@ function template($router, $name, $data)
         'auto_reload' => TRUE,
     ]);
     // filters
-    $twig->addFilter(new \Twig_SimpleFilter('dump', function($stdin) { dump($stdin); }));
-    $twig->addFilter(new \Twig_SimpleFilter('tNum', function($number, $dec = 0) { return number_format($number, $dec, ',', ' '); }));
-    $twig->addFilter(new \Twig_SimpleFilter('tDateTime', function($ts) { return date('Y/m/d H:i', strtotime($ts)); }));
-    $twig->addFilter(new \Twig_SimpleFilter('md', function($md) { return \Michelf\Markdown::defaultTransform($md); }, ['is_safe' => ['html']]));
-    $twig->addFilter(new \Twig_SimpleFilter('json', function($in) { return json_encode(iterator_to_array($in)); }, ['is_safe' => ['html']]));
+    $twig->addFilter(new \Twig_SimpleFilter('dump', function($stdin){ dump($stdin); }));
+    $twig->addFilter(new \Twig_SimpleFilter('tNum', function($number, $dec = 0){ return number_format($number, $dec, ',', ' '); }));
+    $twig->addFilter(new \Twig_SimpleFilter('tDateTime', function($ts){ return date('Y/m/d H:i', strtotime($ts)); }));
+    $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router){
+        $res = preg_replace('/<!--.+-->/mU', '', $res);
+        // image
+        $res = preg_replace_callback('#^[ \t]*\[image:(?<src>.*)\]\s*$#mUi', function($m) use ($router){
+            return '<div class="image"><img src="' .$router->to('./' . $m['src']). '"></div>';
+        }, $res);
+        // video
+        $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router){
+            return '<div class="video"><iframe width="1280" height="720" src="https://www.youtube.com/embed/' .$m['id']. '" frameborder="0" allowfullscreen></iframe></div>';
+        }, $res);
+        // markdown
+        $res = \Michelf\Markdown::defaultTransform($res);
+        return $res;
+    }, ['is_safe' => ['html']]));
+    $twig->addFilter(new \Twig_SimpleFilter('json', function($in){ return json_encode(iterator_to_array($in)); }, ['is_safe' => ['html']]));
     // functions
     $twig->addFunction(new \Twig_SimpleFunction('link_to', function($_) use ($router){ return call_user_func_array([$router, 'to'], func_get_args()); }));
     $twig->addFunction(new \Twig_SimpleFunction('link_*', function($name, ...$args) use ($router){ return call_user_func_array([$router, 'get' . $name], $args); }));
