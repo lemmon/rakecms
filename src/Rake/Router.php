@@ -9,7 +9,7 @@ class Router implements \ArrayAccess
     ];
     private $_root;
     private $_route = '';
-    private $_routePrefix = '';
+    private $_prefix = '';
     private $_query;
     private $_params = [];
     private $_definedLinks = [];
@@ -21,7 +21,7 @@ class Router implements \ArrayAccess
         preg_match('#^(.*/)([^/]+\.php)$#', $_SERVER['SCRIPT_NAME'], $m);
         $this->_options = $o = array_merge($this->_options, $options ?: []);
         $this->_root = isset($o['root']) ? $o['root'] : $m[1];
-        $this->_routePrefix = isset($o['route_prefix']) ? $o['route_prefix'] : ((FALSE === @$o['mod_rewrite']) ? $m[2] . '/' : '');
+        $this->_prefix = isset($o['prefix']) ? $o['prefix'] : ((FALSE === @$o['mod_rewrite']) ? $m[2] . '/' : '');
         $this->_route = isset($o['route']) ? $o['route'] : trim(@$_SERVER['PATH_INFO'], '/');
         $this->_params = explode('/', $this->_route);
     }
@@ -51,7 +51,7 @@ class Router implements \ArrayAccess
 
     public function getRoot($keepPrefix = FALSE, $keepIndex = FALSE)
     {
-        return $this->_root . ($keepPrefix ? rtrim(($keepIndex or 'index.php/' != $this->_routePrefix) ? $this->_routePrefix : '', '/') : '');
+        return (@$this->_root ?: ($this->relative($this->_route, '.') ?: '.') . '/') . ($keepPrefix ? rtrim(($keepIndex or 'index.php/' != $this->_prefix) ? $this->_prefix : '', '/') : '');
     }
 
 
@@ -63,13 +63,13 @@ class Router implements \ArrayAccess
 
     public function getHome()
     {
-        return isset($this->_definedLinks[':home']) ? $this->to($this->_definedLinks[':home']) : ($this->getRoot() . ('index.php/' != $this->_routePrefix ? rtrim($this->_routePrefix, '/') : ''));
+        return isset($this->_definedLinks[':home']) ? $this->to($this->_definedLinks[':home']) : ($this->getRoot() . ('index.php/' != $this->_prefix ? rtrim($this->_prefix, '/') : ''));
     }
 
 
     public function getSelf()
     {
-        return $this->_root . ('index.php/' != $this->_routePrefix ? rtrim($this->_routePrefix . $this->_route, '/') : '');
+        return $this->_root . ('index.php/' != $this->_prefix ? rtrim($this->_prefix . $this->_route, '/') : '');
     }
 
 
@@ -175,19 +175,43 @@ class Router implements \ArrayAccess
         //
         
         if ('' == $link or ('/' !== $link{0} and FALSE === strpos($link, '://'))) {
-            $link = $this->_root . $this->normalize($this->_routePrefix . rtrim($link, '/'));
+            if (FALSE !== $this->_root) {
+                $link = $this->_root . $this->normalize($this->_prefix . rtrim($link, '/'));
+            } else {
+                $link = $this->relative($this->_route, $this->_prefix . rtrim($link, '/'));
+            }
         }
         
         return $link;
     }
 
 
-    function normalize($uri)
+    public function normalize($uri)
     {
         $uri = '/' . $uri;
-        $uri = preg_replace('#/[^/]+/([^/]+\.[^\.]+/)?\.\.#', '', $uri);
+        while (FALSE !== strpos($uri, '/..')) {
+            $uri = preg_replace('#/[^/]+/([^/]+\.[^\.]+/)?\.\.#', '', $uri);
+        }
         $uri = preg_replace('#/([^/]+\.[^\.]+/)?\.#', '', $uri);
+        $uri = str_replace('/./', '/', $uri);
         return substr($uri, 1);
+    }
+
+
+    function relative($from, $link)
+    {
+        $from = explode('/', $from);
+        $link = explode('/', $link);
+        array_pop($from);
+        while ($link and '.' == $link[0]) {
+            array_shift($link);
+        }
+        while ($from and $link and $from[0] == $link[0]) {
+            array_shift($from);
+            array_shift($link);
+        }
+        $link = array_pad($link, -(count($from) + count($link)), '..');
+        return join($link, '/');
     }
 
 

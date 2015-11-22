@@ -89,14 +89,12 @@ function __scrape(array $o = [])
             }
             if ($o['build']) {
                 $_file = BASE_DIR . '/public/' . strtr($link, ['/' => DIRECTORY_SEPARATOR]) . '.html';
-                if (!is_dir($_ = dirname($_file))) {
+                if (!is_dir(dirname($_file))) {
                     mkdir($_, 0755, TRUE);
                 }
                 //
-                $_router = new \Rake\Router(array_replace([
+                $_router = new Router($_ = array_replace([
                     'root' => FALSE,
-                    'root' => './',
-                    'route_prefix' => '',
                     'prefix' => '',
                 ], @config()['router'] ?: [], [
                     'route' => $path,

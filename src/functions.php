@@ -55,7 +55,7 @@ function is_array_like($item)
 function rake()
 {
     // router
-    $router = new \Rake\Router(@config()['router'] ?: []);
+    $router = new Router(@config()['router'] ?: []);
     // display page
     #try {
         $site = new \Rake\Site($router);

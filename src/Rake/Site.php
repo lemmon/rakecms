@@ -4,9 +4,9 @@ namespace Rake;
 
 class Site
 {
-    static private $_pages = [];
-    
     private $_site;
+    private $_router;
+    private $_pages = [];
 
 
     function __construct(Router $router)
@@ -21,12 +21,12 @@ class Site
         if (!array_key_exists($path, $this->_site['data'])) {
             throw new HttpNotFoundException;
         }
-        if (array_key_exists($path, self::$_pages)) {
-            return self::$_pages[$path];
+        if (array_key_exists($path, $this->_pages)) {
+            return $this->_pages[$path];
         } else {
             $res = $this->_site['data'][$path];
             $obj = __NAMESPACE__ . '\\' . (isset($res['type']) ? ucfirst(substr($res['type'], 1, -1)) : 'Page');
-            return self::$_pages[$path] = new $obj($this, $res, $number);
+            return $this->_pages[$path] = new $obj($this, $res, $number);
         }
     }
 
