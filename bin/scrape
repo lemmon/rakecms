@@ -88,7 +88,7 @@ function __scrape(array $o = [])
                 $site[$ns][$locale_id][] = '/' . $path;
             }
             if ($o['build']) {
-                $_file = BASE_DIR . '/public/' . strtr($link, ['/' => DIRECTORY_SEPARATOR]) . '.html';
+                $_file = BASE_DIR . '/public/' . strtr($path ?: 'index', ['/' => DIRECTORY_SEPARATOR]) . '.html';
                 if (!is_dir(dirname($_file))) {
                     mkdir($_, 0755, TRUE);
                 }
@@ -138,7 +138,7 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
         if ('@' == $b{0} and '@' != $a{0}) return -1;
         return strcmp($a, $b);
     });
-    foreach($glob as $file) {
+    foreach ($glob as $file) {
         $name = basename($file);
         if ('_' === $name{0}) {
             continue;
