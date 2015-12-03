@@ -144,7 +144,7 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
             continue;
         }
         if ('@' != $name{0}) {
-            preg_match('/^(?:(\d{1,3})_)?([a-z_]+)(?:\.(\w+))?/', $name, $m);
+            preg_match('/^(?:(\d{1,3})_)?([^\.]+)(?:\.(\w+))?/', $name, $m);
             $slug = strtolower(strtr($m[2], '_', '-'));
             if (is_dir($file)) {
                 __tree($file, $callback, array_merge($level, [$slug]), $ns);
