@@ -59,7 +59,7 @@ function rake()
     // display page
     #try {
         $site = new \Rake\Site($router);
-        $router->match('({link}(.{pageno}).html)', ['link' => '[a-z\-/]+', 'pageno' => '\d+'], function($router, $m) use ($site) {
+        $router->match('({link}(.{pageno}).html)', ['link' => '[\w\-/]+', 'pageno' => '\d+'], function($router, $m) use ($site) {
             $item = $site->getItem('/' . @$m['link'], isset($m['pageno']) ? intval($m['pageno']) : NULL);
             $page = $item->getPage();
             $res = template($router, $item->getTemplate(), array_replace($item instanceof \Rake\Page ? [] : [strtolower(substr(get_class($item), 5)) => $item], [

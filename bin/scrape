@@ -89,7 +89,7 @@ function __scrape(array $o = [])
             }
             if ($o['build']) {
                 $_file = BASE_DIR . '/public/' . strtr($path ?: 'index', ['/' => DIRECTORY_SEPARATOR]) . '.html';
-                if (!is_dir(dirname($_file))) {
+                if (!is_dir($_ = dirname($_file))) {
                     mkdir($_, 0755, TRUE);
                 }
                 //
