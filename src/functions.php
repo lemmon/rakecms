@@ -103,6 +103,10 @@ function template($router, $name, $data)
         $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router){
             return '<div class="video"><iframe width="1280" height="720" src="https://www.youtube.com/embed/' .$m['id']. '" frameborder="0" allowfullscreen></iframe></div>';
         }, $res);
+        // link
+        $res = preg_replace_callback('#\[(?<url>[\.\S]+)\]#mUi', function($m) use ($router){
+            return '<a href="' .$m['url']. '">' .$m['url']. '</a>';
+        }, $res);
         // markdown
         $res = \Michelf\Markdown::defaultTransform($res);
         return $res;

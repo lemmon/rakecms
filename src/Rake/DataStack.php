@@ -10,7 +10,7 @@ class DataStack implements \Iterator, \ArrayAccess, \Countable
     private $_n;
 
 
-    function __construct(array $data)
+    function __construct(array $data = [])
     {
         $this->_data = $data;
         $this->_keys = array_keys($data);

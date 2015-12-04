@@ -71,7 +71,7 @@ function __scrape(array $o = [])
             $data = __data($file);
             $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
             echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
-            if ((!isset($data['state']) or !in_array($data['state'], ['draft', 'hidden'])) and !isset($ns)) {
+            if ((!isset($data['tree']) or !in_array($data['tree'], ['draft', 'hidden'])) and !isset($ns)) {
                 $site['tree'][$locale_id][] = '/' . $path;
             }
             $site['data']['/' . $path] = [
@@ -88,7 +88,7 @@ function __scrape(array $o = [])
                 $site[$ns][$locale_id][] = '/' . $path;
             }
             if ($o['build']) {
-                $_file = BASE_DIR . '/public/' . strtr($path ?: 'index', ['/' => DIRECTORY_SEPARATOR]) . '.html';
+                $_file = BASE_DIR . '/dist/' . strtr($path ?: 'index', ['/' => DIRECTORY_SEPARATOR]) . '.html';
                 if (!is_dir($_ = dirname($_file))) {
                     mkdir($_, 0755, TRUE);
                 }

@@ -23,4 +23,18 @@ class Posts extends DataStack
         //
         return new self($res);
     }
+
+
+    function getSiblingsTo(AbstractItem $item, $n)
+    {
+        $i = 0;
+        $data = array_values($this->getArray());
+        while ($item->getFile() != $data[$i]->getFile()) {
+            $i++;
+            if (!isset($data[$i])) return FALSE;
+        }
+        $data = array_merge(($n > $i ? array_slice($data, 0, $i) : array_slice($data, $i - $n, $n)), array_slice($data, $i + 1, $n));
+        $data = array_slice($data, ($n > $i ? floor(count($data) / 2) : round(count($data) / 2)) - 1, $n);
+        return $data;
+    }
 }
