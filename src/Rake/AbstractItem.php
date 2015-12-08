@@ -107,7 +107,7 @@ abstract class AbstractItem implements \ArrayAccess
 
     function offsetExists($name)
     {
-        return isset($this->_item['data'][$name]);
+        return method_exists($this, 'get' . ucfirst($name)) || isset($this->_item['data'][$name]);
     }
 
 

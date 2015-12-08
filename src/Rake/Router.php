@@ -131,6 +131,8 @@ class Router implements \ArrayAccess
                 foreach ($_match as $_m) {
                     if (is_array($_res) and isset($_res[$_m])) {
                         $_res = $_res[$_m];
+                    } elseif (is_object($_res) and $_res instanceof \ArrayAccess and isset($_res[$_m])) {
+                        $_res = $_res[$_m];
                     } elseif (is_object($_res) and isset($_res->{$_m})) {
                         $_res = $_res->{$_m};
                     } elseif (is_object($_res) and method_exists($_res, 'get' . $_m)) {
