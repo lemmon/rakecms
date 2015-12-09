@@ -111,6 +111,12 @@ function template($router, $name, $data)
         $res = \Michelf\Markdown::defaultTransform($res);
         return $res;
     }, ['is_safe' => ['html']]));
+    $twig->addFilter(new \Twig_SimpleFilter('mdi', function($res) use ($router){
+        $res = preg_replace('/<!--.+-->/mU', '', $res);
+        // markdown inline
+        $res = \Parsedown::instance()->line($res);
+        return $res;
+    }, ['is_safe' => ['html']]));
     $twig->addFilter(new \Twig_SimpleFilter('json', function($in){ return json_encode(iterator_to_array($in)); }, ['is_safe' => ['html']]));
     // functions
     $twig->addFunction(new \Twig_SimpleFunction('link_to', function($_) use ($router){ return call_user_func_array([$router, 'to'], func_get_args()); }));
