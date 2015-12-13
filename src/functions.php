@@ -96,25 +96,46 @@ function template($router, $name, $data)
     $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router){
         $res = preg_replace('/<!--.+-->/mU', '', $res);
         // image
-        $res = preg_replace_callback('#^[ \t]*\[image:(?<src>.*)\]\s*$#mUi', function($m) use ($router){
+        $res = preg_replace_callback('#^[ \t]*\[image:(?<src>.*)\]\s*$#mUi', function($m) use ($router) {
             return '<div class="image"><img src="' .$router->to('./' . $m['src']). '"></div>';
         }, $res);
         // video
-        $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router){
+        $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router) {
             return '<div class="video"><iframe width="1280" height="720" src="https://www.youtube.com/embed/' .$m['id']. '" frameborder="0" allowfullscreen></iframe></div>';
         }, $res);
         // link
-        $res = preg_replace_callback('#\[(?<url>[\.\S]+)\]#mUi', function($m) use ($router){
+        $res = preg_replace_callback('#\[(?<url>[\.\S]+)\]#mUi', function($m) use ($router) {
             return '<a href="' .$m['url']. '">' .$m['url']. '</a>';
         }, $res);
         // markdown
         $res = \Michelf\Markdown::defaultTransform($res);
         return $res;
     }, ['is_safe' => ['html']]));
-    $twig->addFilter(new \Twig_SimpleFilter('mdi', function($res) use ($router){
+    $twig->addFilter(new \Twig_SimpleFilter('mdi', function($res, $len = FALSE) use ($router) {
+        // remove html comments
         $res = preg_replace('/<!--.+-->/mU', '', $res);
+        // standardize newlines
+		$res = preg_replace('{\r\n?}', "\n", $res);
+        // remove blank lines
+        $res = preg_replace('/^\s+$/m', '', $res);
+        // remove following paragraphs
+        $res = preg_replace("/\n\n.*/", '', $res);
         // markdown inline
         $res = \Parsedown::instance()->line($res);
+        // length
+        if ($len and ($l = mb_strlen(strip_tags($res))) > $len) {
+            do {
+                $res = mb_substr($res, 0, 0 - ($l - $len - 1));
+                $res = preg_replace('/<[^<>]+>?$/u', '', $res);
+                $res = preg_replace('/\W+(\w+)?$/u', '', $res);
+                $l = mb_strlen(strip_tags($res));
+            } while ($l > $len);
+            if (FALSE !== strpos($res, '<')) {
+                $res = (new \Tidy)->repairString($res, ['show-body-only' => TRUE], 'utf8');
+            }
+            $res .= '&hellip;';
+        }
+        //
         return $res;
     }, ['is_safe' => ['html']]));
     $twig->addFilter(new \Twig_SimpleFilter('json', function($in){ return json_encode(iterator_to_array($in)); }, ['is_safe' => ['html']]));
