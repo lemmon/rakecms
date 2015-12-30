@@ -27,9 +27,16 @@ class Tree
     }
 
 
-    function getPosts()
+    function __isset($what)
     {
-        return new Posts($this->_site->query('@posts', $this->_page->getLocale()['id'], '**'));
+        return NULL !== $this->__get($what);
+    }
+
+
+    function __get($what)
+    {
+        $class = __NAMESPACE__ . '\\' . ucwords($what);
+        return new $class($this->_site->query("@{$what}", $this->_page->getLocale()['id'], '**'));
     }
 
 

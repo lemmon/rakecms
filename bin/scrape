@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 
 namespace Rake;
@@ -151,7 +151,7 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
             } else {
                 $type = strtolower($m[3]);
                 if ('txt' === $type) {
-                    $callback($file, join(($i or $ns) ? array_merge($level, [$slug]) : $level, '/'), $ns);
+                    $callback($file, join(($i or $ns or empty($level)) ? array_merge($level, [$slug]) : $level, '/'), $ns);
                 } else {
                     continue;
                 }

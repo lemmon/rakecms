@@ -11,6 +11,7 @@
     "require": {
         "php": ">=5.6",
         "lemmon/config": "*@dev",
+        "doctrine/inflector": "^1.1",
         "erusev/parsedown": "1.*",
         "michelf/php-markdown": "1.*",
         "symfony/yaml": "2.*",

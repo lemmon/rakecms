@@ -56,7 +56,11 @@ abstract class AbstractItem implements \ArrayAccess
     function getParent()
     {
         if ($path = $this->_item['path']) {
-            return $this->_site->getItem('/' . rtrim(preg_replace('#[^/]+$#', '', $this->_item['path']), '/'));
+            try {
+                return $this->_site->getItem('/' . rtrim(preg_replace('#[^/]+$#', '', $this->_item['path']), '/'));
+            } catch (HttpNotFoundException $e) {
+                return FALSE;
+            }
         }
     }
     

@@ -92,6 +92,7 @@ function template($router, $name, $data)
     // filters
     $twig->addFilter(new \Twig_SimpleFilter('dump', function($stdin){ dump($stdin); }));
     $twig->addFilter(new \Twig_SimpleFilter('tNum', function($number, $dec = 0){ return number_format($number, $dec, ',', ' '); }));
+    $twig->addFilter(new \Twig_SimpleFilter('tPrice', function($number, $dec = 2){ return number_format($number, $dec, ',', ' '); }));
     $twig->addFilter(new \Twig_SimpleFilter('tDateTime', function($ts){ return date('Y/m/d H:i', strtotime($ts)); }));
     $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router){
         $res = preg_replace('/<!--.+-->/mU', '', $res);
@@ -112,6 +113,10 @@ function template($router, $name, $data)
         return $res;
     }, ['is_safe' => ['html']]));
     $twig->addFilter(new \Twig_SimpleFilter('mdi', function($res, $len = FALSE) use ($router) {
+        // check
+        if (FALSE !== $len and $len <= 0) {
+            return '';
+        }
         // remove html comments
         $res = preg_replace('/<!--.+-->/mU', '', $res);
         // standardize newlines
