@@ -12,44 +12,6 @@ function preg($pattern, $subject)
 }
 
 //
-// filter
-
-function _filter($item, array $filter, $value) {
-    if (!is_array_like($item)) {
-        return FALSE;
-    }
-    $current = array_shift($filter);
-    if ('*' == $current) {
-        return array_filter(array_map(function($item) use ($filter, $value) {
-            return _filter($item, $filter, $value);
-        }, $item));
-    } elseif (isset($item[$current])) {
-        if ($filter) {
-            if (is_array_like($item[$current]) and $res = _filter($item[$current], $filter, $value)) {
-                $item[$current] = $res;
-                return $item;
-            } else {
-                return FALSE;
-            }
-        } elseif ($item[$current] == $value) {
-            return $item;
-        } else {
-            return FALSE;
-        }
-    } else {
-        return FALSE;
-    }
-}
-
-//
-// arrays
-
-function is_array_like($item)
-{
-    return is_array($item) or (is_object($item) and $item instanceof \ArrayAccess);
-}
-
-//
 // rake
 
 function rake()
@@ -80,13 +42,13 @@ function rake()
 //
 // template
 
-function template($router, $name, $data)
+function template($router, $name, $data, $cache = NULL)
 {
     // loader
     $loader = new \Twig_Loader_Filesystem(BASE_DIR . '/templates');
     // twig
     $twig = new \Twig_Environment($loader, [
-        'cache' => BASE_DIR . '/cache/tpl',
+        'cache' => $cache ?? BASE_DIR . '/cache/tpl',
         'auto_reload' => TRUE,
     ]);
     // filters

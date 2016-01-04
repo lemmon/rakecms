@@ -2,7 +2,8 @@
 
 namespace Rake;
 
-use Symfony\Component\Yaml\Yaml;
+use Lemmon\DataStack,
+    Symfony\Component\Yaml\Yaml;
 
 class Data implements \ArrayAccess
 {

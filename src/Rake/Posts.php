@@ -2,6 +2,8 @@
 
 namespace Rake;
 
+use Lemmon\DataStack;
+
 class Posts extends DataStack
 {
 
