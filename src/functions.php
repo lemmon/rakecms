@@ -92,14 +92,20 @@ function template($router, $name, $data, $cache = NULL)
         // length
         if ($len and ($l = mb_strlen(strip_tags($res))) > $len) {
             do {
-                $res = mb_substr($res, 0, 0 - ($l - $len - 1));
-                $res = preg_replace('/<[^<>]+>?$/u', '', $res);
-                $res = preg_replace('/\W+(\w+)?$/u', '', $res);
+                $res = mb_substr($res, 0, 0 - ($l - $len));
+                $res = preg_replace('/<[^<>]+>?$/', '', $res);
+                $res = preg_replace('/(\w+)?$/u', '', $res);
+                $res = preg_replace('/[\-:;\.,\s]+$/', '', $res);
+                $res = preg_replace('/\s+\w$/', '', $res);
                 $l = mb_strlen(strip_tags($res));
             } while ($l > $len);
             if (FALSE !== strpos($res, '<')) {
                 $res = (new \Tidy)->repairString($res, ['show-body-only' => TRUE], 'utf8');
             }
+            do {
+                $res = preg_replace('#\s*<(\w+)[^>]*>\s*</\1>\s*#', '', $res, -1, $n);
+                $res = preg_replace('/\s+\w$/', '', $res);
+            } while ($n);
             $res .= '&hellip;';
         }
         //
