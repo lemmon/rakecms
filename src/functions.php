@@ -87,6 +87,10 @@ function template($router, $name, $data, $cache = NULL)
         $res = preg_replace('/^\s+$/m', '', $res);
         // remove following paragraphs
         $res = preg_replace("/\n\n.*/", '', $res);
+        // link
+        $res = preg_replace_callback('#\[(?<url>[\.\S]+)\]#mUi', function($m) use ($router) {
+            return '<a href="' .$m['url']. '">' .$m['url']. '</a>';
+        }, $res);
         // markdown inline
         $res = \Parsedown::instance()->line($res);
         // length
