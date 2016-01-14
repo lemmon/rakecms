@@ -55,7 +55,18 @@ function template($router, $name, $data, $cache = NULL)
     $twig->addFilter(new \Twig_SimpleFilter('dump', function($stdin){ dump($stdin); }));
     $twig->addFilter(new \Twig_SimpleFilter('tNum', function($number, $dec = 0){ return number_format($number, $dec, ',', ' '); }));
     $twig->addFilter(new \Twig_SimpleFilter('tPrice', function($number, $dec = 2){ return number_format($number, $dec, ',', ' '); }));
-    $twig->addFilter(new \Twig_SimpleFilter('tDateTime', function($ts){ return date('Y/m/d H:i', strtotime($ts)); }));
+    $twig->addFilter(new \Twig_SimpleFilter('tDate', function($ts, $mask = 'Y/m/d') {
+        if (is_string($ts) or !is_numeric($ts)) {
+            $ts = strtotime($ts);
+        }
+        return date($mask, $ts);
+    }));
+    $twig->addFilter(new \Twig_SimpleFilter('tDateTime', function($ts, $mask = 'Y/m/d H:i') {
+        if (is_string($ts) or !is_numeric($ts)) {
+            $ts = strtotime($ts);
+        }
+        return date($mask, $ts);
+    }));
     $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router){
         $res = preg_replace('/<!--.+-->/mU', '', $res);
         // image
