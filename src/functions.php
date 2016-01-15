@@ -108,10 +108,10 @@ function template($router, $name, $data, $cache = NULL)
         if ($len and ($l = mb_strlen(strip_tags($res))) > $len) {
             do {
                 $res = mb_substr($res, 0, 0 - ($l - $len));
-                $res = preg_replace('/<[^<>]+>?$/', '', $res);
+                $res = preg_replace('/<[^<>]+>?$/u', '', $res);
                 $res = preg_replace('/(\w+)?$/u', '', $res);
-                $res = preg_replace('/[\-:;\.,\s]+$/', '', $res);
-                $res = preg_replace('/\s+\w$/', '', $res);
+                $res = preg_replace('/[\-:;\.,\s]+$/u', '', $res);
+                $res = preg_replace('/\s+\w$/u', '', $res);
                 $l = mb_strlen(strip_tags($res));
             } while ($l > $len);
             if (FALSE !== strpos($res, '<')) {
@@ -119,7 +119,7 @@ function template($router, $name, $data, $cache = NULL)
             }
             do {
                 $res = preg_replace('#\s*<(\w+)[^>]*>\s*</\1>\s*#', '', $res, -1, $n);
-                $res = preg_replace('/\s+\w$/', '', $res);
+                $res = preg_replace('/\s+\w$/u', '', $res);
             } while ($n);
             $res .= '&hellip;';
         }
