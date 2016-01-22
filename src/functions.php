@@ -70,8 +70,15 @@ function template($router, $name, $data, $cache = NULL)
     $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router){
         $res = preg_replace('/<!--.+-->/mU', '', $res);
         // image
-        $res = preg_replace_callback('#^[ \t]*\[image:(?<src>.*)\]\s*$#mUi', function($m) use ($router) {
-            return '<div class="image"><img src="' .$router->to('./' . $m['src']). '"></div>';
+        $res = preg_replace_callback('#[ \t]*\[image:(?<params>.*)\]\s*#mUi', function($m) use ($router) {
+            $params = explode(':', $m['params']);
+            $src = array_shift($params);
+            if ($params and preg_match('/\d*(x\d*)?/', $params[0])) {
+                $_ = explode('x', array_shift($params));
+                $w = $_[0] ?? NULL;
+                $h = $_[1] ?? NULL;
+            }
+            return '<div class="image"' .($w ? ' style="max-width:' .$w. 'px"' : ''). '><img src="' .$router->to('./' . $src). '"' .($w ? ' width="' .$w. '"' : ''). '></div>';
         }, $res);
         // video
         $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router) {
