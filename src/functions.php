@@ -67,7 +67,14 @@ function template($router, $name, $data, $cache = NULL)
         }
         return date($mask, $ts);
     }));
-    $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router){
+    $twig->addFilter(new \Twig_SimpleFilter('sp', function($res) {
+        $res = preg_replace('/(?<=\b\w)\s(?=\w)/um', '&nbsp;', $res);
+        $res = preg_replace('/"(.*)"/sumU', '&bdquo;$1&ldquo;', $res);
+        $res = preg_replace('/\-\-/', '&ndash;', $res);
+        $res = preg_replace('/\s*\.{3,}/', '&hellip;', $res);
+        return $res;
+    }, ['is_safe' => ['html']]));
+    $twig->addFilter(new \Twig_SimpleFilter('md', function($res) use ($router) {
         $res = preg_replace('/<!--.+-->/mU', '', $res);
         // image
         $res = preg_replace_callback('#[ \t]*\[image:(?<params>.*)\]\s*#mUi', function($m) use ($router) {
