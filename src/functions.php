@@ -70,7 +70,7 @@ function template($router, $name, $data, $cache = NULL)
     $twig->addFilter(new \Twig_SimpleFilter('sp', function($res) {
         $res = preg_replace('/(?<=\b\w)\s(?=\w)/um', '&nbsp;', $res);
         $res = preg_replace('/"(.*)"/sumU', '&bdquo;$1&ldquo;', $res);
-        $res = preg_replace('/\-\-/', '&ndash;', $res);
+        $res = preg_replace('/(?<!!)\-\-(?!\>)/', '&ndash;', $res);
         $res = preg_replace('/\s*\.{3,}/', '&hellip;', $res);
         return $res;
     }, ['is_safe' => ['html']]));
@@ -85,7 +85,7 @@ function template($router, $name, $data, $cache = NULL)
                 $w = $_[0] ?? NULL;
                 $h = $_[1] ?? NULL;
             }
-            return '<div class="image"' .($w ? ' style="max-width:' .$w. 'px"' : ''). '><img src="' .$router->to('./' . $src). '"' .($w ? ' width="' .$w. '"' : ''). '></div>';
+            return '<div class="image"' .(isset($w) ? ' style="max-width:' .$w. 'px"' : ''). '><img src="' .$router->to('./' . $src). '"' .(isset($w) ? ' width="' .$w. '"' : ''). '></div>';
         }, $res);
         // video
         $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router) {
@@ -119,21 +119,23 @@ function template($router, $name, $data, $cache = NULL)
         // markdown inline
         $res = \Parsedown::instance()->line($res);
         // length
-        if ($len and ($l = mb_strlen(strip_tags($res))) > $len) {
+        if ($len and ($l = mb_strlen(html_entity_decode(strip_tags($res)))) > $len) {
             do {
                 $res = mb_substr($res, 0, 0 - ($l - $len));
+                $res = preg_replace('/$\w+$/', '', $res);
                 $res = preg_replace('/<[^<>]+>?$/u', '', $res);
                 $res = preg_replace('/(\w+)?$/u', '', $res);
+                $res = preg_replace('/(&nbsp;)+$/', '', $res);
                 $res = preg_replace('/[\-:;\.,\s]+$/u', '', $res);
-                $res = preg_replace('/\s+\w$/u', '', $res);
-                $l = mb_strlen(strip_tags($res));
+                $res = preg_replace('/(\s|&nbsp;)+\w$/u', '', $res);
+                $l = mb_strlen(html_entity_decode(strip_tags($res)));
             } while ($l > $len);
             if (FALSE !== strpos($res, '<')) {
                 $res = (new \Tidy)->repairString($res, ['show-body-only' => TRUE], 'utf8');
             }
             do {
                 $res = preg_replace('#\s*<(\w+)[^>]*>\s*</\1>\s*#', '', $res, -1, $n);
-                $res = preg_replace('/\s+\w$/u', '', $res);
+                $res = preg_replace('/(\s|&nbsp;)+\w$/u', '', $res);
             } while ($n);
             $res .= '&hellip;';
         }
