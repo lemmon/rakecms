@@ -85,7 +85,7 @@ function template($router, $name, $data, $cache = NULL)
                 $w = $_[0] ?? NULL;
                 $h = $_[1] ?? NULL;
             }
-            return '<div class="image"' .(isset($w) ? ' style="max-width:' .$w. 'px"' : ''). '><img src="' .$router->to('./' . $src). '"' .(isset($w) ? ' width="' .$w. '"' : ''). '></div>';
+            return '<div class="image"' .(isset($w) ? ' style="max-width:' .$w. 'px"' : ''). '><img src="' .$router->to('./' . $src). '"' .(isset($w) ? ' width="' .$w. '"' : ''). '' .(isset($h) ? ' height="' .$h. '"' : ''). '></div>';
         }, $res);
         // video
         $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) use ($router) {
