@@ -18,9 +18,6 @@
         "symfony/yaml": "2.*",
         "twig/twig": "1.*"
     },
-    "require-dev": {
-        "tracy/tracy": "2.*"
-    },
     "autoload": {
         "psr-4": {
             "Rake\\": "src/Rake"

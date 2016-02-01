@@ -4,7 +4,7 @@ Flat-file CMS for PHP.
 
 # Requirements
 
-- PHP 5.6 or higher.
+- PHP 7 or higher.
 
 # License
 
