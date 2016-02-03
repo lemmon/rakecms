@@ -29,6 +29,12 @@ abstract class AbstractItem implements \ArrayAccess
     }
 
 
+    function getPath()
+    {
+        return $this->_item['path'];
+    }
+
+
     function getFile()
     {
         return $this->_item['file'];
