@@ -10,4 +10,10 @@ class Page extends AbstractItem
     {
         return $this;
     }
+
+
+    function getChildren()
+    {
+        return new Pages($this->getSite()->query("@pages", $this->getLocale()['id'], "{$this->getPath()}/*"));
+    }
 }
