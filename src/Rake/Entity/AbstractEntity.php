@@ -1,8 +1,10 @@
 <?php
 
-namespace Rake;
+namespace Rake\Entity;
 
-abstract class AbstractItem implements \ArrayAccess
+use Rake\Site;
+
+abstract class AbstractEntity implements \ArrayAccess
 {
     private $_site;
     private $_item;
@@ -55,7 +57,7 @@ abstract class AbstractItem implements \ArrayAccess
 
     function getContent()
     {
-        return trim(preg('/\-\-\-.*\-\-\-(.*)$/suU', file_get_contents(BASE_DIR . '/content/' . $this->getFile()))[1]);
+        return trim(\Rake\preg('/\-\-\-.*\-\-\-(.*)$/suU', file_get_contents(BASE_DIR . '/content/' . $this->getFile()))[1]);
     }
 
 
@@ -64,7 +66,7 @@ abstract class AbstractItem implements \ArrayAccess
         if ($path = $this->_item['path']) {
             try {
                 return $this->_site->getItem('/' . rtrim(preg_replace('#[^/]+$#', '', $this->_item['path']), '/'));
-            } catch (HttpNotFoundException $e) {
+            } catch (\Rake\HttpNotFoundException $e) {
                 return FALSE;
             }
         }

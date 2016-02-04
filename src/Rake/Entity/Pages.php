@@ -1,6 +1,6 @@
 <?php
 
-namespace Rake;
+namespace Rake\Entity;
 
 use Lemmon\DataStack;
 

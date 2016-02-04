@@ -25,7 +25,7 @@ class Site
             return $this->_pages[$path];
         } else {
             $res = $this->_site['data'][$path];
-            $obj = __NAMESPACE__ . '\\' . (isset($res['type']) ? ucfirst(substr($res['type'], 1, -1)) : 'Page');
+            $obj = __NAMESPACE__ . '\\Entity\\' . (isset($res['type']) ? ucfirst(substr($res['type'], 1, -1)) : 'Page');
             return $this->_pages[$path] = new $obj($this, $res, $number);
         }
     }

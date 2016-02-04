@@ -1,8 +1,8 @@
 <?php
 
-namespace Rake;
+namespace Rake\Entity;
 
-class Post extends AbstractItem
+class Post extends AbstractEntity
 {
 
 

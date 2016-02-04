@@ -123,17 +123,19 @@ function __scrape(array $o = [])
                         $_site = new \Rake\Site($_router);
                         $_item = $_site->getItem($path);
                         $_page = $_item->getPage();
-                        file_put_contents($base . $file, template($_router, $_item->getTemplate(), array_replace($_item instanceof Page ? [] : [strtolower(substr(get_class($_item), 5)) => $_item], [
+                        $_template = new \Rake\Template\Dispatcher($_router, ['cache' => FALSE]);
+                        file_put_contents($base . $file, $_template->render($_item->getTemplate(), array_replace($_item instanceof \Rake\Entity\Page ? [] : [strtolower(preg('/[^\\\]+$/', get_class($_item))[0]) => $_item], [
                             'site' => $_site,
                             'page' => $_page,
                             'tree' => new \Rake\Tree($_item),
                             'data' => new \Rake\Data($_item),
-                        ]), FALSE));
+                        ])));
                         unset($file);
                         unset($_router);
                         unset($_site);
                         unset($_item);
                         unset($_page);
+                        unset($_template);
                     }
                 }
             }

@@ -11,7 +11,7 @@ class Data implements \ArrayAccess
     private $_base;
 
 
-    function __construct(AbstractItem $page)
+    function __construct(Entity\AbstractEntity $page)
     {
         $this->_page = $page;
         $this->_base = [

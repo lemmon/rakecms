@@ -1,6 +1,6 @@
 <?php
 
-namespace Rake;
+namespace Rake\Entity;
 
 use Lemmon\DataStack;
 
@@ -13,10 +13,9 @@ class Posts extends DataStack
         $res = $this->getArray();
         // sort by date created
         usort($res, function($a, $b){
-            $a = strtotime($a['created']);
-            $b = strtotime($b['created']);
-            if ($a == $b) return 0;
-            return ($a > $b) ? -1 : 1;
+            $a = is_numeric($a['created']) ? intval($a['created']) : strtotime($a['created']);
+            $b = is_numeric($b['created']) ? intval($b['created']) : strtotime($b['created']);
+            return $b <=> $a;
         });
         // slice
         if ($a) {
@@ -27,7 +26,7 @@ class Posts extends DataStack
     }
 
 
-    function getSiblingsTo(AbstractItem $item, $n)
+    function getSiblingsTo(AbstractEntity $item, $n)
     {
         $i = 0;
         $data = array_values($this->getArray());

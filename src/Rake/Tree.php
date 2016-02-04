@@ -42,7 +42,7 @@ class Tree
 
     private function _query($what, ...$args)
     {
-        $class = __NAMESPACE__ . '\\' . ucwords($what);
+        $class = __NAMESPACE__ . '\\Entity\\' . ucwords($what);
         return new $class($this->_page->getSite()->query("@{$what}", $this->_page->getLocale()['id'], ...$args));
     }
 
