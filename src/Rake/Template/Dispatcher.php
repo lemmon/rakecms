@@ -13,7 +13,7 @@ class Dispatcher
     function __construct(Router $router, array $o = [])
     {
         $this->_router = $router;
-        $this->_template = new \Twig_Environment(new \Twig_Loader_Filesystem(BASE_DIR . '/templates'), array_replace([
+        $this->_template = new \Twig_Environment(new \Twig_Loader_Filesystem(BASE_DIR . '/src/templates'), array_replace([
             'cache' => BASE_DIR . '/cache/tpl',
             'auto_reload' => TRUE,
         ], $o));

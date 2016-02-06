@@ -65,16 +65,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('md', function($res) {
                 $res = preg_replace('/<!--.+-->/mU', '', $res);
                 // image
-                $res = preg_replace_callback('#[ \t]*\[image:(?<params>.*)\]\s*#mUi', function($m) {
-                    $params = explode(':', $m['params']);
-                    $src = array_shift($params);
-                    if ($params and preg_match('/\d*(x\d*)?/', $params[0])) {
-                        $_ = explode('x', array_shift($params));
-                        $w = $_[0] ?? NULL;
-                        $h = $_[1] ?? NULL;
-                    }
-                    return '<div class="image"' .(isset($w) ? ' style="max-width:' .$w. 'px"' : ''). '><img src="' .$this->_router->to('./' . $src). '"' .(isset($w) ? ' width="' .$w. '"' : ''). '' .(isset($h) ? ' height="' .$h. '"' : ''). '></div>';
-                }, $res);
+                $res = Helper::parseImages($this->_router, $res);
                 // video
                 $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) {
                     return '<div class="video"><iframe width="1280" height="720" src="https://www.youtube.com/embed/' .$m['id']. '" frameborder="0" allowfullscreen></iframe></div>';
