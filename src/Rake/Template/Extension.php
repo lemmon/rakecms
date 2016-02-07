@@ -56,10 +56,19 @@ class Extension extends \Twig_Extension
                 return date($mask, $ts);
             }),
             new \Twig_SimpleFilter('sp', function($res) {
-                $res = preg_replace('/(?<=\b\w)\s(?=\w)/um', '&nbsp;', $res);
-                $res = preg_replace('/"(.*)"/sumU', '&bdquo;$1&ldquo;', $res);
-                $res = preg_replace('/(?<!!)\-\-(?!\>)/', '&ndash;', $res);
-                $res = preg_replace('/\s*\.{3,}/', '&hellip;', $res);
+                $res = Helper::cleanup($res);
+                $res = preg_split('/\n{2,}/', $res);
+                $res = array_map(function($res) {
+                    return preg_replace_callback('/<[^>]*>(*SKIP)(*F)|[^<]+/um', function($m) { // match anything but html tags
+                        $res = $m[0];
+                        $res = preg_replace('/(?<=\b\w)\s(?=\w)/um', '&nbsp;', $res);       // nbsp
+                        $res = preg_replace('/"(.*)"/sumU', '&bdquo;$1&ldquo;', $res);      // quotes
+                        $res = preg_replace('/(?<!!)\-\-(?!\>)/', '&ndash;', $res);         // dashes
+                        $res = preg_replace('/\s*\.{3,}/', '&hellip;', $res);               // hellip
+                        return $res;
+                    }, $res);
+                }, $res);
+                $res = join("\n\n", $res);
                 return $res;
             }, ['is_safe' => ['html']]),
             new \Twig_SimpleFilter('md', function($res) {
@@ -81,13 +90,7 @@ class Extension extends \Twig_Extension
                 if (FALSE !== $len and $len <= 0) {
                     return '';
                 }
-                // remove html comments
-                $res = preg_replace('/<!--.+-->/mU', '', $res);
-                // standardize newlines
-        		$res = preg_replace('{\r\n?}', "\n", $res);
-                // remove blank lines
-                $res = preg_replace('/^\s+$/m', '', $res);
-                // remove following paragraphs
+                $res = Helper::cleanup($res);
                 $res = preg_replace("/\n\n.*/", '', $res);
                 // link
                 $res = Helper::parseLinks($this->_router, $res);

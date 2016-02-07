@@ -6,6 +6,16 @@ class Helper
 {
 
 
+    static function cleanup($res)
+    {
+        $res = preg_replace('/<!--.+-->/mU', '', $res);     // remove html comments
+		$res = preg_replace('{\r\n?}', "\n", $res);         // standardize newlines
+        $res = preg_replace('/^\s+$/m', '', $res);          // remove blank lines
+        $res = preg_replace('/\h*\n\h*/', "\n", $res);      // remove spaces from empty lines
+        return $res;
+    }
+
+
     static function parseLinks($r, $content)
     {
         return preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?#iu', function($m) use ($r) {
@@ -23,22 +33,32 @@ class Helper
     }
 
 
-    static function parseImages($r, $content)
+    static function parseImages($r, $res)
     {
-        return preg_replace_callback('#[ \t]*\[image:(?<params>.*)\](?<caption>.*)?#ui', function($m) use ($r) {
-            $params = explode(':', $m['params']);
-            $src = array_shift($params);
-            if ($params and preg_match('/\d*(x\d*)?/', $params[0])) {
-                $_ = explode('x', array_shift($params));
-                $w = $_[0] ?? NULL;
-                $h = $_[1] ?? NULL;
-            }
+        $recipe = '\[image:(?<image>[^\]]+)(:(?<w>\d+)(x(?<h>\d+))?)?\]';
+        // parse block images
+        $res = preg_replace_callback('#^\h*' .$recipe. '(?<caption>.*)?#iumU', function($m) use ($r) {
             return '<figure class="image"'
-                .(isset($w) ? ' style="max-width:' .$w. 'px"' : ''). '><img src="'
-                .$r->to('./' . $src). '"' .(isset($w) ? ' width="' .$w. '"' : '')
-                .(isset($h) ? ' height="' .$h. '"' : ''). '>'
-                .(isset($m['caption']) ? '<figcaption>' .trim($m['caption']). '</figcaption>' : ''). '</figure>';
-        }, $content);
+                .(!empty($m['w']) ? ' style="max-width:' .$m['w']. 'px"' : ''). '>' . self::parseImageFragment($r, $m)
+                .(!empty($m['caption']) ? '<figcaption>' .trim($m['caption']). '</figcaption>' : ''). '</figure>';
+        }, $res);
+        // parse inline images
+        $res = preg_replace_callback('#' .$recipe. '#iuU', function($m) use ($r) {
+            return self::parseImageFragment($r, $m);
+        }, $res);
+        //
+        return $res;
+    }
 
+
+    static function parseImageFragment($r, $m)
+    {
+        $src = $m['image'];
+        if ('/' != $src{0} and !preg_match('#^\w+://#', $src)) {
+            $src = './' . $src;
+        }
+        return '<img src="'
+            .$r->to($src). '"' .(!empty($m['w']) ? ' width="' .$m['w']. '"' : '')
+            .(!empty($m['h']) ? ' height="' .$m['h']. '"' : ''). '>';
     }
 }
