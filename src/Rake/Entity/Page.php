@@ -14,6 +14,6 @@ class Page extends AbstractEntity
 
     function getChildren()
     {
-        return new Pages($this->getSite()->query("@pages", $this->getLocale()['id'], "{$this->getPath()}/*"));
+        return new Pages($this->getSite()->query("@pages", $this->getLocale()['id'], "{$this->getLink()}/*"));
     }
 }

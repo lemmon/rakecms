@@ -31,9 +31,9 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
-    function getPath()
+    function getLink()
     {
-        return $this->_item['path'];
+        return $this->_item['link'];
     }
 
 
@@ -63,15 +63,14 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getParent()
     {
-        if ($path = $this->_item['path']) {
-            try {
-                return $this->_site->getItem('/' . rtrim(preg_replace('#[^/]+$#', '', $this->_item['path']), '/'));
-            } catch (\Rake\HttpNotFoundException $e) {
-                return FALSE;
-            }
-        }
+        $tree = $this->_site->getTree($this->_item['l10n']);
+        $link = $this->_item['link'];
+        do {
+            $link = rtrim(preg_replace('#[^/]+$#', '', $link), '/');
+        } while ($link and !isset($tree[$link]));
+        return $link ? $this->_site->getItem($tree[$link]) : NULL;
     }
-    
+
     
     function getPage()
     {

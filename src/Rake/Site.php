@@ -40,11 +40,11 @@ class Site
     function query($what, $locale_id, $mask = '*')
     {
         $mask = strtr($mask, ['**' => '.*', '*' => '[^/]*']);
-        $tree = array_intersect($this->_site[$what][$locale_id], $this->_site['tree'][$locale_id]);
+        $tree = array_intersect($this->_site['tree'][$locale_id], $this->_site[$what][$locale_id]);
         $res = [];
-        foreach ($tree as $item) {
-            if (preg_match("#^/$mask$#", $item)) {
-                $res[] = $this->getItem($item);
+        foreach ($tree as $link => $path) {
+            if (preg_match("#^{$mask}$#", $link)) {
+                $res[] = $this->getItem($path);
             }
         }
         return $res;

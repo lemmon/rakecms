@@ -67,24 +67,25 @@ function __scrape(array $o = [])
         echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
         // go through files
         __tree($item, function($file, $link, $ns) use (&$site, $locale, $root, &$i, $o) {
-            $path = ($i or $ns) ? $link : '';
+            $path = '/' . ($i ? $link : '');
+            $type = $ns ?? '@pages';
             $data = __data($file);
             $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
             echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
             if ((!isset($data['tree']) or !in_array($data['tree'], ['draft', 'hidden']))) {
-                $site['tree'][$locale_id][] = '/' . $path;
+                $site['tree'][$locale_id][$link] = $path;
             }
-            $site['data']['/' . $path] = [
+            $site['data'][$path] = [
                 'l10n' => $locale['id'],
-                'path' => $path,
-                'href' => $path ? $path . '.html' : ':home',
+                'link' => $link,
+                'href' => $i ? $link . '.html' : ':home',
                 'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
                 'file' => substr($file, strlen($root) + 1),
                 'time' => filemtime($file),
                 'data' => $data,
-                'type' => $ns,
+                'type' => $type,
             ];
-            $site[$ns ?? '@pages'][$locale_id][] = '/' . $path;
+            $site[$type][$locale_id][] = $path;
             $i++;
         });
     }
