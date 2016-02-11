@@ -37,10 +37,11 @@ class Helper
     {
         $recipe = '\[image:(?<image>[^\]]+)(:(?<w>\d+)(x(?<h>\d+))?)?\]';
         // parse block images
-        $res = preg_replace_callback('#^\h*' .$recipe. '(?<caption>.*)?#iumU', function($m) use ($r) {
+        $res = preg_replace_callback('#^\h*' .$recipe. '(?<caption>.*)?$#iumU', function($m) use ($r) {
+            $caption = isset($m['caption']) ? trim($m['caption']) : FALSE;
             return '<figure class="image"'
                 .(!empty($m['w']) ? ' style="max-width:' .$m['w']. 'px"' : ''). '>' . self::parseImageFragment($r, $m)
-                .(!empty($m['caption']) ? '<figcaption>' .trim($m['caption']). '</figcaption>' : ''). '</figure>';
+                .(!empty($caption) ? '<figcaption>' .trim($caption). '</figcaption>' : ''). '</figure>';
         }, $res);
         // parse inline images
         $res = preg_replace_callback('#' .$recipe. '#iuU', function($m) use ($r) {
