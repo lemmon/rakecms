@@ -8,7 +8,9 @@ class Helper
 
     static function cleanup($res)
     {
+        /*
         $res = preg_replace('/<!--.+-->/mU', '', $res);     // remove html comments
+        */
 		$res = preg_replace('{\r\n?}', "\n", $res);         // standardize newlines
         $res = preg_replace('/^\s+$/m', '', $res);          // remove blank lines
         $res = preg_replace('/\h*\n\h*/', "\n", $res);      // remove spaces from empty lines
@@ -61,5 +63,13 @@ class Helper
         return '<img src="'
             .$r->to($src). '"' .(!empty($m['w']) ? ' width="' .$m['w']. '"' : '')
             .(!empty($m['h']) ? ' height="' .$m['h']. '"' : ''). '>';
+    }
+
+
+    static function parseVideos($r, $content)
+    {
+        return preg_replace_callback('#^\h*\[video:(?<vendor>.*):(?<id>.*)\]\h*$#imU', function($m) use ($r) {
+            return '<div class="video"><iframe width="1280" height="720" src="https://www.youtube.com/embed/' .$m['id']. '" frameborder="0" allowfullscreen></iframe></div>';
+        }, $content);
     }
 }

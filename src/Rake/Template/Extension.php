@@ -72,14 +72,8 @@ class Extension extends \Twig_Extension
                 return $res;
             }, ['is_safe' => ['html']]),
             new \Twig_SimpleFilter('md', function($res) {
-                $res = preg_replace('/<!--.+-->/mU', '', $res);
-                // image
                 $res = Helper::parseImages($this->_router, $res);
-                // video
-                $res = preg_replace_callback('#^[ \t]*\[video:(?<vendor>.*):(?<id>.*)\]\s*$#mUi', function($m) {
-                    return '<div class="video"><iframe width="1280" height="720" src="https://www.youtube.com/embed/' .$m['id']. '" frameborder="0" allowfullscreen></iframe></div>';
-                }, $res);
-                // link
+                $res = Helper::parseVideos($this->_router, $res);
                 $res = Helper::parseLinks($this->_router, $res);
                 // markdown
                 $res = \Michelf\Markdown::defaultTransform($res);
