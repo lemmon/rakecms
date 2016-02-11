@@ -23,6 +23,6 @@ class Dispatcher
 
     function render($name, $data = [])
     {
-        return $this->_template->render("{$name}.twig.html", $data);
+        return $this->_template->render($name . '.html', $data);
     }
 }
