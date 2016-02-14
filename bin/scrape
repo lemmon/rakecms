@@ -115,7 +115,7 @@ function __scrape(array $o = [])
                         if (!is_dir($_ = dirname($base . $file))) {
                             mkdir($_, 0755, TRUE);
                         }
-                        $_router = new Router($_ = array_replace([
+                        $_router = new \Lemmon\Router\SimpleRouter($_ = array_replace([
                             'root' => FALSE,
                             'prefix' => '',
                         ], @config()['router'] ?: [], [

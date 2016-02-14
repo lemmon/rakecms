@@ -12,6 +12,7 @@
         "php": ">=7.0",
         "lemmon/config": "@dev",
         "lemmon/datastack": "@dev",
+        "lemmon/router": "@dev",
         "doctrine/inflector": "^1.1",
         "erusev/parsedown": "1.*",
         "michelf/php-markdown": "1.*",

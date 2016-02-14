@@ -17,7 +17,7 @@ function preg($pattern, $subject)
 function rake()
 {
     // router
-    $router = new Router(@config()['router'] ?: []);
+    $router = new \Lemmon\Router\SimpleRouter(@config()['router'] ?: []);
     // display page
     #try {
         $site = new \Rake\Site($router);
