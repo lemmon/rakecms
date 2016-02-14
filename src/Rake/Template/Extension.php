@@ -2,7 +2,7 @@
 
 namespace Rake\Template;
 
-use Rake\Router;
+use Lemmon\Router\SimpleRouter as Router;
 
 class Extension extends \Twig_Extension
 {

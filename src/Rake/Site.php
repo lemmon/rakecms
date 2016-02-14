@@ -2,6 +2,8 @@
 
 namespace Rake;
 
+use Lemmon\Router\SimpleRouter as Router;
+
 class Site
 {
     private $_site;

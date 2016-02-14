@@ -115,11 +115,11 @@ function __scrape(array $o = [])
                         if (!is_dir($_ = dirname($base . $file))) {
                             mkdir($_, 0755, TRUE);
                         }
-                        $_router = new \Lemmon\Router\SimpleRouter($_ = array_replace([
+                        $_router = new \Lemmon\Router\SimpleRouter(array_replace([
                             'root' => FALSE,
-                            'prefix' => '',
+                            'base' => './',
                         ], @config()['router'] ?: [], [
-                            'route' => $link,
+                            'path' => $link,
                         ]));
                         $_site = new \Rake\Site($_router);
                         $_item = $_site->getItem($path);
