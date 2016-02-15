@@ -20,7 +20,13 @@ class Helper
 
     static function parseLinks($r, $content)
     {
-        return preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?#iu', function($m) use ($r) {
+        $res = $content;
+        // parse emails
+        $res = preg_replace_callback('#\[email:(?<email>[^\]]+)\]#iu', function($m) use ($r) {
+            return '<a href="mailto:' .$m['email']. '">' .$m['email']. '</a>';
+        }, $res);
+        // parse links
+        $res = preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?#iu', function($m) use ($r) {
             $p = '';
             $url = $m['url'];
             $caption = $m['caption'] ?? $m['url'];
@@ -31,7 +37,9 @@ class Helper
                 $p .= ' target="_blank"';
             }
             return '<a' .$p. ' href="' .$url. '">' .$caption. '</a>';
-        }, $content);
+        }, $res);
+        //
+        return $res;
     }
 
 
