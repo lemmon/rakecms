@@ -2,16 +2,16 @@
 
 namespace Rake\Template;
 
-use Lemmon\Router\SimpleRouter as Router;
+use Rake\Site as Site;
 
 class Extension extends \Twig_Extension
 {
-    private $_router;
+    private $_site;
 
 
-    function __construct(Router $router)
+    function __construct(Site $site)
     {
-        $this->_router = $router;
+        $this->_site = $site;
     }
 
 
@@ -25,10 +25,10 @@ class Extension extends \Twig_Extension
     {
         return [
             new \Twig_SimpleFunction('link_to', function($_) {
-                return call_user_func_array([$this->_router, 'to'], func_get_args());
+                return call_user_func_array([$this->_site->getRouter(), 'to'], func_get_args());
             }),
             new \Twig_SimpleFunction('link_*', function($name, ...$args) {
-                return call_user_func_array([$this->_router, 'get' . $name], $args);
+                return call_user_func_array([$this->_site->getRouter(), 'get' . $name], $args);
             }),
         ];
     }
@@ -72,9 +72,9 @@ class Extension extends \Twig_Extension
                 return $res;
             }, ['is_safe' => ['html']]),
             new \Twig_SimpleFilter('md', function($res) {
-                $res = Helper::parseImages($this->_router, $res);
-                $res = Helper::parseVideos($this->_router, $res);
-                $res = Helper::parseLinks($this->_router, $res);
+                $res = Helper::parseImages($this->_site->getRouter(), $res);
+                $res = Helper::parseVideos($this->_site->getRouter(), $res);
+                $res = Helper::parseLinks($this->_site->getRouter(), $res);
                 // markdown
                 $res = \Michelf\Markdown::defaultTransform($res);
                 return $res;
@@ -87,7 +87,7 @@ class Extension extends \Twig_Extension
                 $res = Helper::cleanup($res);
                 $res = preg_replace("/\n\n.*/", '', $res);
                 // link
-                $res = Helper::parseLinks($this->_router, $res);
+                $res = Helper::parseLinks($this->_site->getRouter(), $res);
                 // markdown inline
                 $res = \Parsedown::instance()->line($res);
                 // length
