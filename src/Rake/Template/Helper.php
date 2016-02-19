@@ -22,8 +22,14 @@ class Helper
     {
         $res = $content;
         // parse emails
-        $res = preg_replace_callback('#\[email:(?<email>[^\]]+)\]#iu', function($m) use ($r) {
-            return '<a href="mailto:' .$m['email']. '">' .$m['email']. '</a>';
+        $res = preg_replace_callback('#\[email(?<hide>:hide)?:(?<email>[^\]]+)\]#iu', function($m) use ($r) {
+            $email = $m['email'];
+            if (!empty($m['hide'])) {
+                $email = str_rot13($email);
+                return '<a href="#" data-mailto="' .$email. '">' .$email. '</a>';
+            } else {
+                return '<a href="mailto:' .$email. '">' .$email. '</a>';
+            }
         }, $res);
         // parse links
         $res = preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?#iu', function($m) use ($r) {
