@@ -41,6 +41,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('json', function($in) {
                 return json_encode(iterator_to_array($in));
             }, ['is_safe' => ['html']]),
+            new \Twig_SimpleFilter('num', function($number, ...$args) { return number_format($number, ...$args); }),
             new \Twig_SimpleFilter('tNum', function($number, $dec = 0) { return number_format($number, $dec, ',', ' '); }),
             new \Twig_SimpleFilter('tPrice', function($number, $dec = 2) { return number_format($number, $dec, ',', ' '); }),
             new \Twig_SimpleFilter('tDate', function($ts, $mask = 'Y/m/d') {
