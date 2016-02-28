@@ -44,7 +44,7 @@ class Extension extends \Twig_Extension
     function getFilters()
     {
         return [
-            new \Twig_SimpleFilter('dump', function($stdin) { dump($stdin); }),
+            new \Twig_SimpleFilter('dump', function($stdin) { \dump($stdin); }),
             new \Twig_SimpleFilter('json', function($in) {
                 return json_encode(iterator_to_array($in));
             }, ['is_safe' => ['html']]),
