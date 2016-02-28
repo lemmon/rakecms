@@ -30,6 +30,13 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('link_*', function($name, ...$args) {
                 return call_user_func_array([$this->_site->getRouter(), 'get' . $name], $args);
             }),
+            new \Twig_SimpleFunction('placeholder', function($w = NULL, $h = NULL) {
+                $img = '';
+                $img .= '<svg xmlns="http://www.w3.org/2000/svg"' .($w ? ' width="' .$w. '"' : ''). '' .($h ? ' height="' .$h. '"' : ''). '>';
+                $img .= '<rect width="100%" height="100%" fill="#c8c8c8"/>';
+                $img .= '</svg>';
+                return '<img src="data:image/svg+xml;base64,' .base64_encode($img). '"' .($w ? ' width="' .$w. '"' : ''). '' .($h ? ' height="' .$h. '"' : ''). ' alt="">';
+            }, ['is_safe' => ['html']]),
         ];
     }
 
@@ -55,6 +62,9 @@ class Extension extends \Twig_Extension
                     $ts = strtotime($ts);
                 }
                 return date($mask, $ts);
+            }),
+            new \Twig_SimpleFilter('line', function($str) {
+                return trim(preg_replace('/\s+/', ' ', $str));
             }),
             new \Twig_SimpleFilter('lines', function($str) {
                 return array_filter(preg_split('/\v+/', $str));
