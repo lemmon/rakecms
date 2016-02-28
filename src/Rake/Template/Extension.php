@@ -56,13 +56,16 @@ class Extension extends \Twig_Extension
                 }
                 return date($mask, $ts);
             }),
-            new \Twig_SimpleFilter('sp', function($res) {
+            new \Twig_SimpleFilter('lines', function($str) {
+                return array_filter(preg_split('/\v+/', $str));
+            }),
+            new \Twig_SimpleFilter('sp', function($res, $x = 1) {
                 $res = Helper::cleanup($res);
                 $res = preg_split('/\n{2,}/', $res);
-                $res = array_map(function($res) {
-                    return preg_replace_callback('/<[^>]*>(*SKIP)(*F)|[^<]+/um', function($m) { // match anything but html tags
+                $res = array_map(function($res) use ($x) {
+                    return preg_replace_callback('/<[^>]*>(*SKIP)(*F)|[^<]+/um', function($m) use ($x) { // match anything but html tags
                         $res = $m[0];
-                        $res = preg_replace('/(?<=\b\w)\s(?=\w)/um', '&nbsp;', $res);       // nbsp
+                        $res = preg_replace('/(\b\w{1,' .$x. '})\s(?=\w)/um', '$1&nbsp;', $res);       // nbsp
                         $res = preg_replace('/"(.*)"/sumU', '&bdquo;$1&ldquo;', $res);      // quotes
                         $res = preg_replace('/(?<!!)\-\-(?!\>)/', '&ndash;', $res);         // dashes
                         $res = preg_replace('/\s*\.{3,}/', '&hellip;', $res);               // hellip

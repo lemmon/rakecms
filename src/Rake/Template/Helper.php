@@ -32,7 +32,7 @@ class Helper
             }
         }, $res);
         // parse links
-        $res = preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?#iu', function($m) use ($r) {
+        $res = preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?(?!\()#iu', function($m) use ($r) {
             $p = '';
             $url = $m['url'];
             $caption = $m['caption'] ?? $m['url'];
