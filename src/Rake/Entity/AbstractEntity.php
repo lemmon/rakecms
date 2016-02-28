@@ -82,6 +82,17 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
+    function getBreadcrumbs()
+    {
+        $res = [];
+        $page = $this;
+        while ($page = $page->getParent()) {
+            $res[] = $page;
+        }
+        return $res;
+    }
+
+
     function getLocale()
     {
         return $this->_site->getLocale($this->_item['l10n']);
