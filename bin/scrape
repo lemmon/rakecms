@@ -4,12 +4,14 @@
 namespace Rake;
 
 use Lemmon\Router\SimpleRouter as Router;
+use Symfony\Component\Yaml\Yaml;
 
 //
 // options
-$optin = getopt('bd:h', ['help', 'build']);
+$optin = getopt('bd:h', ['help', 'build', 'env:']);
 $options = [
     'build' => FALSE,
+    'env' => NULL,
 ];
 
 //
@@ -27,6 +29,7 @@ if (isset($optin['h']) or isset($optin['help'])) {
     exit(1);
 } else {
     if (isset($optin['b']) or isset($optin['build'])) $options['build'] = TRUE;
+    if (isset($optin['env'])) $options['env'] = $optin['env'];
     __scrape($options);
 }
 
@@ -100,10 +103,26 @@ function __scrape(array $o = [])
     
     // build static files
     if ($o['build']) {
+        // environment
+        $env = $o['env'] ?? 'default';
         // dist dir
         $base = BASE_DIR . '/dist/';
         if (!is_dir($base)) {
             mkdir($base, 0755, TRUE);
+        }
+        // build options
+        $_options = [
+            'site' => array_filter([
+                'build' => time(),
+                'env' => $env,
+            ]),
+            'router' => [
+                'root' => FALSE,
+                'base' => './',
+            ],
+        ];
+        if (file_exists($_ = BASE_DIR . '/scrapefile.yml')) {
+            $_options = array_replace_recursive($_options, Yaml::parse(file_get_contents($_))[$env] ?? []);
         }
         // iterate
         foreach ($site as $ns => $items) {
@@ -117,12 +136,8 @@ function __scrape(array $o = [])
                         if (!is_dir($_ = dirname($base . $file))) {
                             mkdir($_, 0755, TRUE);
                         }
-                        $_router = new Router([
-                            'root' => FALSE,
-                            'base' => './',
-                            'path' => $link,
-                        ]);
-                        $_site = new Site($_router);
+                        $_router = new Router(array_replace($_options['router'], ['path' => $link]));
+                        $_site = new Site($_router, $_options['site']);
                         $_item = $_site->getItem($path);
                         $_page = $_item->getPage();
                         $_template = new Template\Dispatcher($_site, ['cache' => FALSE]);
@@ -191,7 +206,7 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
 function __data($file) {
     $data = file_get_contents($file);
     $data = @preg('/\-\-\-\s+(.*)\-\-\-/suU', $data)[1];
-    $data = \Symfony\Component\Yaml\Yaml::parse($data) ?: [];
+    $data = Yaml::parse($data) ?: [];
     unset($data['number']);
     return $data;
 }

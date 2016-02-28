@@ -6,15 +6,19 @@ use Lemmon\Router\SimpleRouter as Router;
 
 class Site
 {
+    private $_build;
+    private $_env;
     private $_site;
     private $_router;
     private $_pages = [];
 
 
-    function __construct(Router $router)
+    function __construct(Router $router, array $o = NULL)
     {
-        $this->_router = $router;
+        $this->_build = $o['build'] ?? FALSE;
+        $this->_env = $o['env'] ?? 'default';
         $this->_site = json_decode(file_get_contents(BASE_DIR . '/build/site.json'), TRUE);
+        $this->_router = $router;
     }
 
 
@@ -36,6 +40,18 @@ class Site
     function getLocale($id)
     {
         return $this->_site['l10n'][$id];
+    }
+
+
+    function getBuild()
+    {
+        return $this->_build;
+    }
+
+
+    function getEnv()
+    {
+        return $this->_env;
     }
 
 
