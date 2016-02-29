@@ -16,4 +16,10 @@ class Page extends AbstractEntity
     {
         return new Pages($this->getSite()->query("@pages", $this->getLocale()['id'], "{$this->getLink()}/*"));
     }
+
+
+    function getSiblings()
+    {
+        return new Pages($this->getSite()->query("@pages", $this->getLocale()['id'], preg_replace('#[^/]+$#', '*', $this->getLink())));
+    }
 }
