@@ -2,7 +2,7 @@
 
 namespace Rake;
 
-use Lemmon\Router\SimpleRouter as Router;
+use Lemmon\Router\Router;
 
 class Site
 {

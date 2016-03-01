@@ -3,7 +3,7 @@
 
 namespace Rake;
 
-use Lemmon\Router\SimpleRouter as Router;
+use Lemmon\Router\Router;
 use Symfony\Component\Yaml\Yaml;
 
 //

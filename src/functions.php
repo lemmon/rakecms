@@ -2,7 +2,7 @@
 
 namespace Rake;
 
-use Lemmon\Router\SimpleRouter as Router;
+use Lemmon\Router\Router;
 
 //
 // preg
@@ -31,7 +31,8 @@ function rake()
             'data' => new Data($item),
             'i18n' => new I18n($item),
         ])));
-        exit(0);
     });
-    throw new HttpNotFoundException;
+    if (!$site->getRouter()->dispatch()) {
+        throw new HttpNotFoundException;
+    }
 }
