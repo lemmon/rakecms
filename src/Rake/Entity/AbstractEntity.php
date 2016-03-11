@@ -3,6 +3,7 @@
 namespace Rake\Entity;
 
 use Rake\Site;
+use Symfony\Component\Yaml\Yaml;
 
 abstract class AbstractEntity implements \ArrayAccess
 {
@@ -57,7 +58,22 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getContent()
     {
-        return trim(\Rake\preg('/\-\-\-.*\-\-\-(.*)$/suU', file_get_contents(BASE_DIR . '/content/' . $this->getFile()))[1]);
+        $c = trim(file_get_contents(BASE_DIR . '/content/' . $this->getFile()));
+		$c = preg_replace('{\r\n?}', "\n", $c);
+        $c = trim(\Rake\preg('/^---(.*)---\h*\n(.*)$/usU', $c)[2] ?? '');
+        
+        $res = [];
+        foreach (preg_split('/\n{2,}(?=---\h+\w+\h+---\h*\n)/', $c) as $i => $item) {
+            $item = trim($item);
+            preg_match('/^(---\h+(?<name>[\w]+)\h+---\h*\n((?<data>.*)\n---\h*)?)?\n?(?<text>.*)$/us', $item, $m);
+            $res[] = [
+                'name' => $m['name'],
+                'data' => Yaml::parse($m['data']),
+                'text' => trim($m['text']),
+            ];
+        }
+        
+        return new ContentStack($res);
     }
 
 
