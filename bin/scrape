@@ -83,6 +83,7 @@ function __scrape(array $o = [])
             $site['data'][$path] = [
                 'l10n' => $locale['id'],
                 'link' => $link,
+                'path' => $path,
                 'href' => $i ? $link . '.html' : ':home',
                 'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
                 'file' => substr($file, strlen($root) + 1),

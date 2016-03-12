@@ -38,6 +38,12 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
+    function getPath()
+    {
+        return $this->_item['path'];
+    }
+
+
     function getFile()
     {
         return $this->_item['file'];
@@ -127,7 +133,7 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getName()
     {
-        return @$this->_item['data']['name'] ?: $this->_item['name'];
+        return $this->_item['data']['name'] ?? $this->_item['name'];
     }
 
 
