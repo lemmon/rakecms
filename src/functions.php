@@ -20,8 +20,8 @@ function rake()
 {
     // router
     $site = new Site(new Router);
-    $site->getRouter()->match('({link}(.{pageno}).html)', ['link' => '[\w\-/]+', 'pageno' => '\d+'], function($router, $m) use ($site) {
-        $item = $site->getItem('/' . @$m['link'], isset($m['pageno']) ? intval($m['pageno']) : NULL);
+    $site->getRouter()->match('({link}(.{pageno}).html)', ['link' => '[\w\-/]+', 'pageno' => '\d+'], function($router, string $link = NULL) use ($site) {
+        $item = $site->getItem('/' . $link);
         $page = $item->getPage();
         $t = new Template\Dispatcher($site);
         echo($t->render($item->getTemplate(), array_replace($item instanceof Entity\Page ? [] : [strtolower(preg('/[^\\\]+$/', get_class($item))[0]) => $item], [
