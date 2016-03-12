@@ -58,7 +58,7 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getContent()
     {
-        $c = trim(file_get_contents(BASE_DIR . '/content/' . $this->getFile()));
+        $c = trim(file_get_contents(BASE_DIR . '/' . $this->getFile()));
 		$c = preg_replace('{\r\n?}', "\n", $c);
         $c = trim(\Rake\preg('/^---(.*)---\h*\n(.*)$/usU', $c)[2] ?? '');
         

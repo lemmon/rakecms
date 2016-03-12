@@ -53,10 +53,10 @@ function __scrape(array $o = [])
 {
     $t = -microtime(TRUE);
     $site = [];
-    $root = BASE_DIR . '/content';
+    $root = BASE_DIR;
 
     // go through locales
-    foreach (glob($root . '/*') as $i => $item) {
+    foreach (glob($root . '/content/*') as $i => $item) {
         $i = 0;
         $base = basename($item);
         $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
