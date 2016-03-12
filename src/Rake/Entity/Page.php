@@ -12,6 +12,12 @@ class Page extends AbstractEntity
     }
 
 
+    function getLevel()
+    {
+        return count(explode('/', parent::getLink())) - 1;
+    }
+
+
     function getChildren()
     {
         return new Pages($this->getSite()->query("@pages", $this->getLocale()['id'], "{$this->getLink()}/*"));
