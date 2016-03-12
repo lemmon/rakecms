@@ -43,6 +43,12 @@ class Site
     }
 
 
+    function getLocales()
+    {
+        return $this->_site['l10n'];
+    }
+
+
     function getBuild()
     {
         return $this->_build;
