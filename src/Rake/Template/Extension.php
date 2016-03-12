@@ -46,7 +46,17 @@ class Extension extends \Twig_Extension
         return [
             new \Twig_SimpleFilter('dump', function($stdin) { \dump($stdin); }),
             new \Twig_SimpleFilter('json', function($in) {
-                return json_encode(iterator_to_array($in));
+                if (is_array($in)) {
+                    return json_encode($in);
+                } elseif (is_object($in)) {
+                    if (method_exists($in, 'getArray')) {
+                        return json_encode($in->getArray());
+                    } elseif ($in instanceof \Traversable) {
+                        return json_encode(iterator_to_array($in));
+                    } else {
+                        return json_encode($in);
+                    }
+                }
             }, ['is_safe' => ['html']]),
             new \Twig_SimpleFilter('num', function($number, ...$args) { return number_format($number, ...$args); }),
             new \Twig_SimpleFilter('tNum', function($number, $dec = 0) { return number_format($number, $dec, ',', ' '); }),
