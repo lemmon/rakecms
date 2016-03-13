@@ -19,6 +19,24 @@ class ContentChunk
     }
 
 
+    function getName()
+    {
+        return $this->_name;
+    }
+
+
+    function getData()
+    {
+        return $this->_data;
+    }
+
+
+    function getText()
+    {
+        return $this->_text;
+    }
+
+
     function __toString()
     {
         return $this->_text;
