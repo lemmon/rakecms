@@ -3,6 +3,7 @@
 namespace Rake;
 
 use Lemmon\Router\Router;
+use Lemmon\DataStack;
 
 class Site
 {
@@ -72,6 +73,12 @@ class Site
             }
         }
         return $res;
+    }
+
+
+    function filter(array $filter)
+    {
+        return (new DataStack($this->_site['data']))->filter($filter);
     }
 
 
