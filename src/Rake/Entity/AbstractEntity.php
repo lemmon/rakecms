@@ -3,7 +3,7 @@
 namespace Rake\Entity;
 
 use Rake\Site;
-use Symfony\Component\Yaml\Yaml;
+use function Rake\parse_content;
 
 abstract class AbstractEntity implements \ArrayAccess
 {
@@ -64,28 +64,7 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getContent()
     {
-        $c = trim(file_get_contents(BASE_DIR . '/' . $this->getFile()));
-		$c = preg_replace('{\r\n?}', "\n", $c);
-        preg_match('/^---(.*)---\h*\n(?<content0>.*)\n?\h*(?<contentx>---.*)$/usU', $c, $m);
-                
-        $res = [[
-            'name' => NULL,
-            'data' => NULL,
-            'text' => $m['content0'] ?? '',
-        ]];
-        if (isset($m['contentx'])) {
-            foreach (preg_split('/\n{2,}(?=---\h+\w+\h+---\h*\n)/', $m['contentx']) as $i => $item) {
-                $item = trim($item);
-                preg_match('/^(---\h+(?<name>[\w]+)\h+---\h*\n((?<data>.*)\n---\h*)?)?\n?(?<text>.*)$/us', $item, $m);
-                $res[] = [
-                    'name' => $m['name'],
-                    'data' => Yaml::parse($m['data']),
-                    'text' => trim($m['text']),
-                ];
-            }
-        }
-        
-        return new ContentStack($res);
+        return parse_content(file_get_contents(BASE_DIR . '/' . $this->getFile()));
     }
 
 
@@ -127,11 +106,11 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
-    function getTemplate()
+    function getTemplateFilename()
     {
-        return @reset(array_filter([
-            @$this->_item['data']['template'],
-            @$this->_item['type'] ? substr($this->_item['type'], 1, -1) : NULL,
+        return @array_shift(array_filter([
+            $this->_item['data']['template'] ?? NULL,
+            $this->_item['type'] ? substr($this->_item['type'], 1, -1) : NULL,
             'default',
         ]));
     }

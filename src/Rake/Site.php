@@ -7,19 +7,33 @@ use Lemmon\DataStack;
 
 class Site
 {
-    private $_build;
     private $_env;
+    private $_opt;
     private $_site;
+    private $_build;
     private $_router;
+    private $_template;
     private $_pages = [];
 
 
-    function __construct(Router $router, array $o = NULL)
+    function __construct($env = NULL, array $opt = [], int $build = NULL)
     {
-        $this->_build = $o['build'] ?? FALSE;
-        $this->_env = $o['env'] ?? 'default';
+        // environment
+        if (empty($env)) {
+            $env = 'default';
+        }
+        // options
+        if (file_exists($_ = BASE_DIR . '/scrapefile.yml')) {
+            die('== LOAD YML =='); // TODO
+        }
+        if (file_exists($_ = BASE_DIR . '/scrapefile.php') and $_ = include $_) {
+            $opt = array_replace_recursive($opt, $_['*'] ?? [], $_[$env] ?? []);
+        }
+        //
+        $this->_env = $env;
+        $this->_opt = $opt ?? [];
         $this->_site = json_decode(file_get_contents(BASE_DIR . '/build/site.json'), TRUE);
-        $this->_router = $router;
+        $this->_build = $build;
     }
 
 
@@ -88,8 +102,25 @@ class Site
     }
 
 
-    function getRouter()
+    function getRouter(array $o = NULL)
     {
-        return $this->_router;
+        if ($o) {
+            return new Router(array_replace_recursive($this->_opt['router'] ?? [], $o));
+        } else {
+            return $this->_router ?? $this->_router = new Router($this->_opt['router'] ?? []);
+        }
+    }
+
+
+    function getTemplate(array $o = [])
+    {
+        if (!$o and $this->_template) {
+            return $this->_template;
+        }
+        $t = new Template\Dispatcher($this, $o);
+        if (isset($this->_opt['template']) and $this->_opt['template'] instanceof \Closure) {
+            $this->_opt['template']($t);
+        }
+        return $o ? $t : $this->_template = $t;
     }
 }

@@ -8,8 +8,9 @@ use Symfony\Component\Yaml\Yaml;
 
 //
 // options
-$optin = getopt('bd:h', ['help', 'build', 'env:']);
+$optin = getopt('bd:h', ['help', 'build', 'build-only', 'env:']);
 $options = [
+    'scrape' => TRUE,
     'build' => FALSE,
     'env' => NULL,
 ];
@@ -29,6 +30,7 @@ if (isset($optin['h']) or isset($optin['help'])) {
     exit(1);
 } else {
     if (isset($optin['b']) or isset($optin['build'])) $options['build'] = TRUE;
+    if (isset($optin['build-only'])) $options = array_replace($options, ['scrape' => FALSE, 'build' => TRUE]);
     if (isset($optin['env'])) $options['env'] = $optin['env'];
     __scrape($options);
 }
@@ -54,77 +56,73 @@ function __scrape(array $o = [])
     $t = -microtime(TRUE);
     $site = [];
     $root = BASE_DIR;
-
-    // go through locales
-    foreach (glob($root . '/content/*') as $i => $item) {
-        $i = 0;
-        $base = basename($item);
-        $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
-        if ('_' == $base{0} or !is_dir($item)) {
-            continue;
-        }
-        $site['l10n'][$locale_id] = $locale = [
-            'id'      => $locale_id,
-            'dir'     => $base,
-            'active'  => !('_' == $base{0}),
-            'primary' => !(bool)$i,
-        ];
-        echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
-        // go through files
-        __tree($item, function($file, $link, $ns) use (&$site, $locale, $root, &$i, $o) {
-            $path = '/' . ($i ? $link : '');
-            $type = $ns ?? '@pages';
-            $data = __data($file);
-            $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
-            echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
-            if ((!isset($data['tree']) or !in_array($data['tree'], ['draft', 'hidden']))) {
-                $site['tree'][$locale_id][$link] = $path;
+    
+    if ($o['scrape']) {
+        // go through locales
+        foreach (glob($root . '/content/*') as $i => $item) {
+            $i = 0;
+            $base = basename($item);
+            $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
+            if ('_' == $base{0} or !is_dir($item)) {
+                continue;
             }
-            $site['data'][$path] = [
-                'l10n' => $locale['id'],
-                'link' => $link,
-                'path' => $path,
-                'href' => $i ? $link . '.html' : ':home',
-                'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
-                'file' => substr($file, strlen($root) + 1),
-                'time' => filemtime($file),
-                'data' => $data,
-                'type' => $type,
+            $site['l10n'][$locale_id] = $locale = [
+                'id'      => $locale_id,
+                'dir'     => $base,
+                'active'  => !('_' == $base{0}),
+                'primary' => !(bool)$i,
             ];
-            $site[$type][$locale_id][] = $path;
-            $i++;
-        });
+            echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
+            // go through files
+            __tree($item, function($file, $link, $ns) use (&$site, $locale, $root, &$i, $o) {
+                $path = '/' . ($i ? $link : '');
+                $type = $ns ?? '@pages';
+                $data = __data($file);
+                $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
+                echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
+                if ((!isset($data['tree']) or !in_array($data['tree'], ['draft', 'hidden']))) {
+                    $site['tree'][$locale_id][$link] = $path;
+                }
+                $site['data'][$path] = [
+                    'l10n' => $locale['id'],
+                    'link' => $link,
+                    'path' => $path,
+                    'href' => $i ? $link . '.html' : ':home',
+                    'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
+                    'file' => substr($file, strlen($root) + 1),
+                    'time' => filemtime($file),
+                    'data' => $data,
+                    'type' => $type,
+                ];
+                $site[$type][$locale_id][] = $path;
+                $i++;
+            });
+        }
+        // save results
+        if (!is_dir($_ = $root . '/build')) {
+            mkdir($_, 0755, TRUE);
+        }
+        file_put_contents($root . '/build/site.json', json_encode($site, JSON_PRETTY_PRINT));
+    } else {
+        $site = json_decode(file_get_contents($root . '/build/site.json'), TRUE);
     }
-
-    // save results
-    if (!is_dir($_ = BASE_DIR . '/build')) {
-        mkdir($_, 0755, TRUE);
-    }
-    file_put_contents(BASE_DIR . '/build/site.json', json_encode($site, JSON_PRETTY_PRINT));
     
     // build static files
     if ($o['build']) {
         // environment
         $env = $o['env'] ?? 'default';
         // dist dir
-        $base = BASE_DIR . '/dist/';
+        $base = $root . '/dist/';
         if (!is_dir($base)) {
             mkdir($base, 0755, TRUE);
         }
-        // build options
-        $_options = [
-            'site' => array_filter([
-                'build' => time(),
-                'env' => $env,
-            ]),
+        // site
+        $_site = new Site($env, [
             'router' => [
                 'root' => FALSE,
                 'base' => './',
             ],
-        ];
-        if (file_exists($_ = BASE_DIR . '/scrapefile.yml')) {
-            $_options = array_replace_recursive($_options, Yaml::parse(file_get_contents($_))[$env] ?? []);
-        }
+        ], time());
         // iterate
         foreach ($site as $ns => $items) {
             if ('@' === $ns{0}) {
@@ -137,21 +135,21 @@ function __scrape(array $o = [])
                         if (!is_dir($_ = dirname($base . $file))) {
                             mkdir($_, 0755, TRUE);
                         }
-                        $_router = new Router(array_replace($_options['router'], ['path' => $link]));
-                        $_site = new Site($_router, $_options['site']);
+                        $_router = $_site->getRouter(['path' => $link]);
                         $_item = $_site->getItem($path);
                         $_page = $_item->getPage();
-                        $_template = new Template\Dispatcher($_site, ['cache' => FALSE]);
-                        file_put_contents($base . $file, $_template->render($_item->getTemplate(), array_replace($_item instanceof Entity\Page ? [] : [strtolower(preg('/[^\\\]+$/', get_class($_item))[0]) => $_item], [
+                        $_template = $_site->getTemplate(['cache' => FALSE]);
+                        file_put_contents($base . $file, $_template->render($_item->getTemplateFilename(), [
                             'site' => $_site,
                             'page' => $_page,
                             'tree' => new Tree($_item),
                             'data' => new Data($_item),
                             'i18n' => new I18n($_item),
-                        ])));
+                            'entry' => $_item,
+                            'content' => $_item->getContent(),
+                        ]));
                         unset($file);
                         unset($_router);
-                        unset($_site);
                         unset($_item);
                         unset($_page);
                         unset($_template);

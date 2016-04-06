@@ -4,14 +4,14 @@ namespace Rake\Entity;
 
 use Lemmon\DataStack;
 
-class ContentChunk
+class ContentChunk implements \ArrayAccess
 {
     private $_name;
     private $_data;
     private $_text;
 
 
-    function __construct($name, $data, $text)
+    function __construct(string $name, array $data = NULL, string $text = NULL)
     {
         $this->_name = $name;
         $this->_data = $data;
@@ -43,14 +43,18 @@ class ContentChunk
     }
 
 
-    function __isset($name)
+    function offsetExists($offset)
     {
-        return isset($this->_data[$name]);
+        return array_key_exists($offset, $this->_data);
     }
 
 
-    function __get($name)
+    function offsetGet($offset)
     {
-        return is_array($_ = $this->_data[$name]) ? new DataStack($_) : $_;
+        return is_array($_ = $this->_data[$offset]) ? new DataStack($_) : $_;
     }
+
+
+    function offsetSet($offset, $value) {}
+    function offsetUnset($offset) {}
 }
