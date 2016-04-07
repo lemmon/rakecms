@@ -64,7 +64,7 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getContent()
     {
-        return parse_content(file_get_contents(BASE_DIR . '/' . $this->getFile()));
+        return parse_content(file_get_contents(BASE_DIR . '/content/' . $this->getFile()));
     }
 
 

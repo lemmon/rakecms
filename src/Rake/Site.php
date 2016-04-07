@@ -23,11 +23,14 @@ class Site
             $env = 'default';
         }
         // options
-        if (file_exists($_ = BASE_DIR . '/scrapefile.yml')) {
-            die('== LOAD YML =='); // TODO
+        if (file_exists($_file = BASE_DIR . '/scrapefile.yml')) {
+            $_opt = \Symfony\Component\Yaml\Yaml::parse(file_get_contents($_file));
         }
-        if (file_exists($_ = BASE_DIR . '/scrapefile.php') and $_ = include $_) {
-            $opt = array_replace_recursive($opt, $_['*'] ?? [], $_[$env] ?? []);
+        if (file_exists($_file = BASE_DIR . '/scrapefile.php')) {
+            $_opt = include $_file;
+        }
+        if (isset($_opt)) {
+            $opt = array_replace_recursive($opt, $_opt['*'] ?? [], $_opt['all'] ?? [], $_opt[$env] ?? []);
         }
         //
         $this->_env = $env;

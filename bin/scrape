@@ -55,11 +55,11 @@ function __scrape(array $o = [])
 {
     $t = -microtime(TRUE);
     $site = [];
-    $root = BASE_DIR;
+    $root = BASE_DIR . '/content';
     
     if ($o['scrape']) {
         // go through locales
-        foreach (glob($root . '/content/*') as $i => $item) {
+        foreach (glob($root . '/*') as $i => $item) {
             $i = 0;
             $base = basename($item);
             $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
@@ -99,12 +99,12 @@ function __scrape(array $o = [])
             });
         }
         // save results
-        if (!is_dir($_ = $root . '/build')) {
+        if (!is_dir($_ = BASE_DIR . '/build')) {
             mkdir($_, 0755, TRUE);
         }
-        file_put_contents($root . '/build/site.json', json_encode($site, JSON_PRETTY_PRINT));
+        file_put_contents(BASE_DIR . '/build/site.json', json_encode($site, JSON_PRETTY_PRINT));
     } else {
-        $site = json_decode(file_get_contents($root . '/build/site.json'), TRUE);
+        $site = json_decode(file_get_contents(BASE_DIR . '/build/site.json'), TRUE);
     }
     
     // build static files
@@ -112,7 +112,7 @@ function __scrape(array $o = [])
         // environment
         $env = $o['env'] ?? 'default';
         // dist dir
-        $base = $root . '/dist/';
+        $base = BASE_DIR . '/dist/';
         if (!is_dir($base)) {
             mkdir($base, 0755, TRUE);
         }
