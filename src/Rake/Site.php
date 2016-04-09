@@ -13,7 +13,7 @@ class Site
     private $_build;
     private $_router;
     private $_template;
-    private $_pages = [];
+    private $_entities = [];
 
 
     function __construct($env = NULL, array $opt = [], int $build = NULL)
@@ -40,17 +40,41 @@ class Site
     }
 
 
-    function getItem($path, $number = NULL)
+    function dispatch(Callable $callback, array $opt = [])
     {
-        if (!array_key_exists($path, $this->_site['data'])) {
+        #dump(array_replace_recursive($this->_opt['router'] ?? [], $opt['router'] ?? []));die;
+        
+        $this->_router = new Router(array_replace_recursive($this->_opt['router'] ?? [], $opt['router'] ?? []));
+        $this->_router->match('({link=index}.html)', ['link' => '[\w\-/]+'], function($r, string $link) use ($callback) {
+            if ($page = $this->getItem($link)) {
+                $callback($this, $page);
+            } else {
+                return FALSE;
+            }
+        }, 'page');
+        if (!$this->_router->dispatch()) {
             throw new HttpNotFoundException;
         }
-        if (array_key_exists($path, $this->_pages)) {
-            return $this->_pages[$path];
+    }
+
+
+    function getRouter()
+    {
+        return $this->_router;
+    }
+
+
+    function getItem($link)
+    {
+        if (!array_key_exists($link, $this->_site['data'])) {
+            return FALSE;
+        }
+        if (array_key_exists($link, $this->_entities)) {
+            return $this->_entities[$link];
         } else {
-            $res = $this->_site['data'][$path];
+            $res = $this->_site['data'][$link];
             $obj = __NAMESPACE__ . '\\Entity\\' . (isset($res['type']) ? ucfirst(substr($res['type'], 1, -1)) : 'Page');
-            return $this->_pages[$path] = new $obj($this, $res, $number);
+            return $this->_entities[$link] = new $obj($this, $res);
         }
     }
 
@@ -86,7 +110,7 @@ class Site
         $res = [];
         foreach ($tree as $link => $path) {
             if (preg_match("#^{$mask}$#", $link)) {
-                $res[] = $this->getItem($path);
+                $res[] = $this->getItem($link);
             }
         }
         return $res;
@@ -102,16 +126,6 @@ class Site
     function getTree($locale_id)
     {
         return $this->_site['tree'][$locale_id];
-    }
-
-
-    function getRouter(array $o = NULL)
-    {
-        if ($o) {
-            return new Router(array_replace_recursive($this->_opt['router'] ?? [], $o));
-        } else {
-            return $this->_router ?? $this->_router = new Router($this->_opt['router'] ?? []);
-        }
     }
 
 

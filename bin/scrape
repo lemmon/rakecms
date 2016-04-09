@@ -83,11 +83,10 @@ function __scrape(array $o = [])
                 if ((!isset($data['tree']) or !in_array($data['tree'], ['draft', 'hidden']))) {
                     $site['tree'][$locale_id][$link] = $path;
                 }
-                $site['data'][$path] = [
+                $site['data'][$link] = [
                     'l10n' => $locale['id'],
                     'link' => $link,
-                    'path' => $path,
-                    'href' => $i ? $link . '.html' : ':home',
+                    'path' => $i ? $link . '.html' : '',
                     'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
                     'file' => substr($file, strlen($root) + 1),
                     'time' => filemtime($file),
@@ -124,37 +123,27 @@ function __scrape(array $o = [])
             ],
         ], time());
         // iterate
-        foreach ($site as $ns => $items) {
-            if ('@' === $ns{0}) {
-                foreach ($items as $locale_id => $entries) {
-                    echo "\033[0;33mBuilding:\033[0;37m " . $locale_id . " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m", PHP_EOL;
-                    foreach ($entries as $path) {
-                        $link = substr($path, 1);
-                        $file = strtr($link ?: 'index', ['/' => DIRECTORY_SEPARATOR]) . '.html';
-                        echo " \033[1;30m-\033[0;37m " . $file . PHP_EOL;
-                        if (!is_dir($_ = dirname($base . $file))) {
-                            mkdir($_, 0755, TRUE);
-                        }
-                        $_router = $_site->getRouter(['path' => $link]);
-                        $_item = $_site->getItem($path);
-                        $_page = $_item->getPage();
-                        $_template = $_site->getTemplate(['cache' => FALSE]);
-                        file_put_contents($base . $file, $_template->render($_item->getTemplateFilename(), [
-                            'site' => $_site,
-                            'page' => $_page,
-                            'tree' => new Tree($_item),
-                            'data' => new Data($_item),
-                            'i18n' => new I18n($_item),
-                            'entry' => $_item,
-                            'content' => $_item->getContent(),
-                        ]));
-                        unset($file);
-                        unset($_router);
-                        unset($_item);
-                        unset($_page);
-                        unset($_template);
-                    }
+        foreach ($site['tree'] as $locale_id => $pages) {
+            echo "\033[0;33mBuilding:\033[0;37m " . $locale_id, PHP_EOL;
+            foreach ($pages as $link => $path) {
+                $item = $site['data'][$link];
+                $file = $link . '.html';
+                // verbose
+                echo " \033[1;30m-\033[0;37m " . $file;
+                if ('@pages' != $item['type']) {
+                    echo " \033[1;30m(\033[0;32m" .$item['type']. "\033[1;30m)\033[0;37m";
                 }
+                echo PHP_EOL;
+                // prepare directory
+                if (!is_dir($_dir = dirname($base . $file))) {
+                    mkdir($_dir, 0755, TRUE);
+                }
+                // dispatch page
+                $_site->dispatch(function ($s, $p) use ($base, $file) {
+                    file_put_contents($base . $file, $s->getTemplate(['cache' => FALSE])->render($p->getTemplateFilename(), $p->getTemplateData()));
+                }, [
+                    'router' => ['path' => $item['path']],
+                ]);
             }
         }
     }

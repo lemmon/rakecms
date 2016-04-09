@@ -58,21 +58,7 @@ function parse_content_ns(array &$c, string $ns = '', array $res = [])
 function rake(string $env = NULL)
 {
     $site = new Site($env);
-    $router = $site->getRouter();
-    $router->match('({link}.html)', ['link' => '[\w\-/]+', 'pageno' => '\d+'], function($r, string $link = NULL) use ($site) {
-        $item = $site->getItem('/' . $link);
-        $page = $item->getPage();
-        print($site->getTemplate()->render($item->getTemplateFilename(), array_replace($item instanceof Entity\Page ? [] : [strtolower(preg('/[^\\\]+$/', get_class($item))[0]) => $item], [
-            'site' => $site,
-            'page' => $page,
-            'tree' => new Tree($item),
-            'data' => new Data($item),
-            'i18n' => new I18n($item),
-            'entry' => $item,
-            'content' => $item->getContent(),
-        ])));
+    $site->dispatch(function ($s, $p) {
+        print($s->getTemplate()->render($p->getTemplateFilename(), $p->getTemplateData()));
     });
-    if (!$router->dispatch()) {
-        throw new HttpNotFoundException;
-    }
 }

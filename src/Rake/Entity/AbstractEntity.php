@@ -9,14 +9,12 @@ abstract class AbstractEntity implements \ArrayAccess
 {
     private $_site;
     private $_item;
-    private $_number;
 
 
-    function __construct(Site $site, $item, $number = NULL)
+    function __construct(Site $site, $item)
     {
         $this->_site = $site;
         $this->_item = $item;
-        $this->_number = $number;
     }
 
 
@@ -38,21 +36,17 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
+    /*
     function getPath()
     {
         return $this->_item['path'];
     }
+    */
 
 
     function getFile()
     {
         return $this->_item['file'];
-    }
-
-
-    function getNumber()
-    {
-        return $this->_number ?: 1;
     }
 
 
@@ -75,7 +69,7 @@ abstract class AbstractEntity implements \ArrayAccess
         do {
             $link = rtrim(preg_replace('#[^/]+$#', '', $link), '/');
         } while ($link and !isset($tree[$link]));
-        return $link ? $this->_site->getItem($tree[$link]) : NULL;
+        return $link ? $this->_site->getItem($link) : NULL;
     }
 
     
@@ -116,6 +110,20 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
+    function getTemplateData()
+    {
+        return [
+            'site' => $this->getSite(),
+            'page' => $this->getPage(),
+            'tree' => new \Rake\Tree($this),
+            'data' => new \Rake\Data($this),
+            'i18n' => new \Rake\I18n($this),
+            'entry' => $this,
+            'content' => $this->getContent(),
+        ];
+    }
+
+
     function getName()
     {
         return $this->_item['data']['name'] ?? $this->_item['name'];
@@ -130,7 +138,7 @@ abstract class AbstractEntity implements \ArrayAccess
 
     function getHref()
     {
-        return $this->_site->getRouter()->to($this->_item['href']);
+        return $this->_site->getRouter()->to(':page', ['link' => $this->_item['link']]);
     }
 
 
