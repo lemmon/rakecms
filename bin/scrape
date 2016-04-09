@@ -127,20 +127,20 @@ function __scrape(array $o = [])
             echo "\033[0;33mBuilding:\033[0;37m " . $locale_id, PHP_EOL;
             foreach ($pages as $link => $path) {
                 $item = $site['data'][$link];
-                $file = $link . '.html';
+                $file = $base . $link . '.html';
                 // verbose
-                echo " \033[1;30m-\033[0;37m " . $file;
+                echo " \033[1;30m-\033[0;37m " . $link;
                 if ('@pages' != $item['type']) {
                     echo " \033[1;30m(\033[0;32m" .$item['type']. "\033[1;30m)\033[0;37m";
                 }
                 echo PHP_EOL;
                 // prepare directory
-                if (!is_dir($_dir = dirname($base . $file))) {
+                if (!is_dir($_dir = dirname($file))) {
                     mkdir($_dir, 0755, TRUE);
                 }
                 // dispatch page
-                $_site->dispatch(function ($s, $p) use ($base, $file) {
-                    file_put_contents($base . $file, $s->getTemplate(['cache' => FALSE])->render($p->getTemplateFilename(), $p->getTemplateData()));
+                $_site->dispatch(function ($s, $p) use ($file) {
+                    file_put_contents($file, $p->render(['cache' => FALSE]));
                 }, [
                     'router' => ['path' => $item['path']],
                 ]);

@@ -96,15 +96,15 @@ class Extension extends \Twig_Extension
                 $res = join("\n\n", $res);
                 return $res;
             }, ['is_safe' => ['html']]),
-            new \Twig_SimpleFilter('md', function($res) {
+            new \Twig_SimpleFilter('md', function(\Twig_Environment $env, $res) {
                 $res = Helper::parseImages($this->_site->getRouter(), $res);
                 $res = Helper::parseVideos($this->_site->getRouter(), $res);
-                $res = Helper::parseLinks($this->_site->getRouter(), $res);
+                $res = Helper::parseLinks($env, $this->_site, $this->_site->getRouter(), $res);
                 // markdown
                 $res = \Michelf\Markdown::defaultTransform($res);
                 return $res;
-            }, ['is_safe' => ['html']]),
-            new \Twig_SimpleFilter('mdi', function($res, $len = FALSE) {
+            }, ['is_safe' => ['html'], 'needs_environment' => TRUE]),
+            new \Twig_SimpleFilter('mdi', function(\Twig_Environment $env, $res, $len = FALSE) {
                 // check
                 if (FALSE !== $len and $len <= 0) {
                     return '';
@@ -112,7 +112,7 @@ class Extension extends \Twig_Extension
                 $res = Helper::cleanup($res);
                 $res = preg_replace("/\n\n.*/", '', $res);
                 // link
-                $res = Helper::parseLinks($this->_site->getRouter(), $res);
+                $res = Helper::parseLinks($env, $this->_site, $this->_site->getRouter(), $res);
                 // markdown inline
                 $res = \Parsedown::instance()->line($res);
                 // length
@@ -138,7 +138,7 @@ class Extension extends \Twig_Extension
                 }
                 //
                 return $res;
-            }, ['is_safe' => ['html']]),
+            }, ['is_safe' => ['html'], 'needs_environment' => TRUE]),
         ];
     }
 }

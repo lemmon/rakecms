@@ -12,7 +12,6 @@ class Site
     private $_site;
     private $_build;
     private $_router;
-    private $_template;
     private $_entities = [];
 
 
@@ -42,8 +41,6 @@ class Site
 
     function dispatch(Callable $callback, array $opt = [])
     {
-        #dump(array_replace_recursive($this->_opt['router'] ?? [], $opt['router'] ?? []));die;
-        
         $this->_router = new Router(array_replace_recursive($this->_opt['router'] ?? [], $opt['router'] ?? []));
         $this->_router->match('({link=index}.html)', ['link' => '[\w\-/]+'], function($r, string $link) use ($callback) {
             if ($page = $this->getItem($link)) {
@@ -55,6 +52,12 @@ class Site
         if (!$this->_router->dispatch()) {
             throw new HttpNotFoundException;
         }
+    }
+
+
+    function getOpt()
+    {
+        return $this->_opt;
     }
 
 
@@ -126,18 +129,5 @@ class Site
     function getTree($locale_id)
     {
         return $this->_site['tree'][$locale_id];
-    }
-
-
-    function getTemplate(array $o = [])
-    {
-        if (!$o and $this->_template) {
-            return $this->_template;
-        }
-        $t = new Template\Dispatcher($this, $o);
-        if (isset($this->_opt['template']) and $this->_opt['template'] instanceof \Closure) {
-            $this->_opt['template']($t);
-        }
-        return $o ? $t : $this->_template = $t;
     }
 }

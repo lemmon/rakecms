@@ -18,11 +18,11 @@ class Helper
     }
 
 
-    static function parseLinks($r, $content)
+    static function parseLinks(\Twig_Environment $env, $site, $r, $content)
     {
         $res = $content;
         // parse emails
-        $res = preg_replace_callback('#\[email(?<hide>:hide)?:(?<email>[^\]]+)\]#iu', function($m) use ($r) {
+        $res = preg_replace_callback('#\[email(?<hide>:hide)?:(?<email>[^\]]+)\]#iu', function ($m) use ($r) {
             $email = $m['email'];
             if (!empty($m['hide'])) {
                 $email = str_rot13($email);
@@ -31,8 +31,20 @@ class Helper
                 return '<a href="mailto:' .$email. '">' .$email. '</a>';
             }
         }, $res);
+        // parse internal links
+        $res = preg_replace_callback('#\[(?<filter>{.+})\](\[(?<caption>[^\]]+)\])?#us', function ($m) use ($env, $r) {
+            $filter = \Symfony\Component\Yaml\Yaml::parse($m['filter']);
+            $caption = $m['caption'];
+            $query = $env->getGlobals()['tree']->pages->filter($filter);
+            if ($query->count()) {
+                return '<a href="' .$query->getFirst()->getHref(). '">' .$caption. '</a>';
+            } else {
+                trigger_error('Invalid query: ' . $m['filter']);
+                return '<a href="#">' .$caption. '</a>';
+            }
+        }, $res);
         // parse links
-        $res = preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?(?!\()#iu', function($m) use ($r) {
+        $res = preg_replace_callback('#\[(?<tag>link:)?(?<ext>ext\w*:)?(?<url>[\.\S]+)\](\[(?<caption>[^\]]+)\])?(?!\()#iu', function ($m) use ($r) {
             $p = '';
             $url = $m['url'];
             $caption = $m['caption'] ?? $m['url'];

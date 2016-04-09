@@ -59,6 +59,7 @@ function rake(string $env = NULL)
 {
     $site = new Site($env);
     $site->dispatch(function ($s, $p) {
-        print($s->getTemplate()->render($p->getTemplateFilename(), $p->getTemplateData()));
+        print($p->render());
+        exit(0);
     });
 }

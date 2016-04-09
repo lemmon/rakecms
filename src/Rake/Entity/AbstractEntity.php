@@ -3,6 +3,7 @@
 namespace Rake\Entity;
 
 use Rake\Site;
+use Rake\Template;
 use function Rake\parse_content;
 
 abstract class AbstractEntity implements \ArrayAccess
@@ -90,7 +91,7 @@ abstract class AbstractEntity implements \ArrayAccess
         while ($page = $page->getParent()) {
             $res[] = $page;
         }
-        return $res;
+        return array_reverse($res);
     }
 
 
@@ -100,27 +101,16 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
-    function getTemplateFilename()
+    function render(array $opt = [])
     {
-        return @array_shift(array_filter([
-            $this->_item['data']['template'] ?? NULL,
-            $this->_item['type'] ? substr($this->_item['type'], 1, -1) : NULL,
-            'default',
-        ]));
-    }
+        $tpl = new Template\Dispatcher($this, $opt);
+        $opt = $this->_site->getOpt();
+        
+        if (isset($opt['template']) and $opt['template'] instanceof \Closure) {
+            $opt['template']($tpl);
+        }
 
-
-    function getTemplateData()
-    {
-        return [
-            'site' => $this->getSite(),
-            'page' => $this->getPage(),
-            'tree' => new \Rake\Tree($this),
-            'data' => new \Rake\Data($this),
-            'i18n' => new \Rake\I18n($this),
-            'entry' => $this,
-            'content' => $this->getContent(),
-        ];
+        return $tpl->render($this->_item['data']['template'] ?? ($this->_item['type'] ? substr($this->_item['type'], 1, -1) : NULL) ?? 'default', []);
     }
 
 

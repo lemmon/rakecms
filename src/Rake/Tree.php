@@ -5,7 +5,6 @@ namespace Rake;
 class Tree
 {
     private $_page;
-    private $_site;
     private $_tree;
 
 

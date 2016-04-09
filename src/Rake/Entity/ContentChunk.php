@@ -45,7 +45,7 @@ class ContentChunk implements \ArrayAccess
 
     function offsetExists($offset)
     {
-        return array_key_exists($offset, $this->_data);
+        return $this->_data and array_key_exists($offset, $this->_data);
     }
 
 
