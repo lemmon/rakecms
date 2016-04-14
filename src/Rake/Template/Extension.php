@@ -80,6 +80,7 @@ class Extension extends \Twig_Extension
                 return array_filter(preg_split('/\v+/', $str));
             }),
             new \Twig_SimpleFilter('sp', function($res, $x = 1) {
+                $res = strval($res);
                 $res = Helper::cleanup($res);
                 $res = preg_split('/\n{2,}/', $res);
                 $res = array_map(function($res) use ($x) {

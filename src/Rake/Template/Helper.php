@@ -12,8 +12,8 @@ class Helper
         $res = preg_replace('/<!--.+-->/mU', '', $res);     // remove html comments
         */
 		$res = preg_replace('{\r\n?}', "\n", $res);         // standardize newlines
-        $res = preg_replace('/^\s+$/m', '', $res);          // remove blank lines
-        $res = preg_replace('/\h*\n\h*/', "\n", $res);      // remove spaces from empty lines
+        $res = preg_replace('/^\s+$/mu', '', $res);         // remove blank lines
+        $res = preg_replace('/\h*\n\h*/u', "\n", $res);     // remove spaces from empty lines
         return $res;
     }
 
