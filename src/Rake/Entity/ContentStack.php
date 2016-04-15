@@ -66,7 +66,7 @@ class ContentStack extends DataStack
 
     function getText()
     {
-        return join("\n", array_filter(array_map(function($item) {
+        return join("\n\n", array_filter(array_map(function($item) {
             return $item->getText();
         }, parent::getData())));
     }

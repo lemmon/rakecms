@@ -23,7 +23,7 @@ function parse_content(string $c)
             return [
                 'name' => $m['name'],
                 'data' => \Symfony\Component\Yaml\Yaml::parse($m['data']),
-                'text' => trim($m['text']) . "\n",
+                'text' => trim($m['text']),
             ];
         }
     }, $c));
