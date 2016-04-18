@@ -32,7 +32,7 @@ class Helper
             }
         }, $res);
         // parse internal links
-        $res = preg_replace_callback('#\[(?<filter>{.+})\](\[(?<caption>[^\]]+)\])?#us', function ($m) use ($env, $r) {
+        $res = preg_replace_callback('#\[(?<filter>{.+})\](\[(?<caption>[^\]]+)\])?#iu', function ($m) use ($env, $r) {
             $filter = \Symfony\Component\Yaml\Yaml::parse($m['filter']);
             $caption = $m['caption'];
             $query = $env->getGlobals()['tree']->pages->filter($filter);
