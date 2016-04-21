@@ -140,6 +140,14 @@ class Extension extends \Twig_Extension
                 //
                 return $res;
             }, ['is_safe' => ['html'], 'needs_environment' => TRUE]),
+            new \Twig_SimpleFilter('mdx', function(\Twig_Environment $env, $res) {
+                $res = Helper::parseImages($this->_site->getRouter(), $res);
+                $res = Helper::parseVideos($this->_site->getRouter(), $res);
+                $res = Helper::parseLinks($env, $this->_site, $this->_site->getRouter(), $res);
+                // markdown
+                $res = \Michelf\MarkdownExtra::defaultTransform($res);
+                return $res;
+            }, ['is_safe' => ['html'], 'needs_environment' => TRUE]),
         ];
     }
 }
