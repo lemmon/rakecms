@@ -73,6 +73,12 @@ abstract class AbstractEntity implements \ArrayAccess
         return $link ? $this->_site->getItem($link) : NULL;
     }
 
+
+    function getType()
+    {
+        return substr($this->_item['type'], 1);
+    }
+
     
     function getPage()
     {
