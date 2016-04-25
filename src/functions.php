@@ -17,9 +17,9 @@ function parse_content(string $c)
 {
     $c = trim($c);
 	$c = preg_replace('{\r\n?}', "\n", $c);
-    $c = preg_split('/^(?=---\h+[\w\.]+\h+---)/ums', $c);
+    $c = preg_split('/^(?=---\h+[\w\.]+\h+---)/ums', $c . "\n");
     $c = array_filter(array_map(function($item) {
-        if (preg_match('/^(---(\h+(?<name>[\w\.]+)\h+---)?\h*\n((?<data>.*)\n---\h*)?)?\n?(?<text>.*)$/us', $item, $m)) {
+        if (preg_match('/^(---(\h+(?<name>[\w\.]+)\h+---)?\h*\n((?<data>.*)\n---\h*\n)?)?\s*(?<text>.*)$/us', $item, $m)) {
             return [
                 'name' => $m['name'],
                 'data' => \Symfony\Component\Yaml\Yaml::parse($m['data']),
