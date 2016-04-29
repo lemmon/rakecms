@@ -15,7 +15,7 @@ class Site
     private $_entities = [];
 
 
-    function __construct($env = NULL, array $opt = [], int $build = NULL)
+    function __construct(string $env = NULL, array $opt = [], int $build = NULL)
     {
         // environment
         if (empty($env)) {
