@@ -18,12 +18,12 @@ $options = [
 //
 // dir
 if (isset($optin['d'])) {
-    $root = realpath(('/' == $optin['d']{0} ? '' : getcwd() . '/') . $optin['d']);
+    $base = realpath(('/' == $optin['d']{0} ? '' : getcwd() . '/') . $optin['d']);
 } else {
-    $root = getcwd();
+    $base = getcwd();
 }
 
-require $root . '/bootstrap.php';
+require $base . '/bootstrap.php';
 
 if (isset($optin['h']) or isset($optin['help'])) {
     __displayHelp();
@@ -55,11 +55,11 @@ function __scrape(array $o = [])
 {
     $t = -microtime(TRUE);
     $site = [];
-    $root = BASE_DIR . '/content';
+    $root = BASE_DIR;
     
     if ($o['scrape']) {
         // go through locales
-        foreach (glob($root . '/*') as $i => $item) {
+        foreach (glob($root . '/content/*') as $i => $item) {
             $i = 0;
             $base = basename($item);
             $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
@@ -80,9 +80,7 @@ function __scrape(array $o = [])
                 $data = __data($file);
                 $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
                 echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
-                if ((!isset($data['tree']) or !in_array($data['tree'], ['draft', 'hidden']))) {
-                    $site['tree'][$locale_id][$link] = $path;
-                }
+                $site['tree'][$locale_id][$link] = $path;
                 $site['data'][$link] = [
                     'l10n' => $locale['id'],
                     'link' => $link,
@@ -156,8 +154,9 @@ function __scrape(array $o = [])
 function __tree($dir, $callback, $level = [], $ns = NULL) {
     $l = strlen($dir) + 1;
     $i = 0;
-    $glob = glob($dir . '/*');
-    usort($glob, function($a, $b){
+    $bl = strlen(BASE_DIR);
+    $glob = glob($dir . '/*', GLOB_NOSORT);
+    usort($glob, function ($a, $b) {
         $a = basename($a);
         $b = basename($b);
         if ('@' == $a{0} and '@' != $b{0}) return +1;
@@ -177,7 +176,8 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
             } else {
                 $type = strtolower($m[3]);
                 if ('txt' === $type) {
-                    $callback($file, join(($i or $ns or empty($level)) ? array_merge($level, [$slug]) : $level, '/'), $ns);
+                    $file_final = file_exists($_ = BASE_DIR . '/' . preg_replace('#^[^/]+#', 'local', substr($file, $bl + 1))) ? $_ : $file;
+                    $callback($file_final, join(($i or $ns or empty($level)) ? array_merge($level, [$slug]) : $level, '/'), $ns);
                 } else {
                     continue;
                 }
