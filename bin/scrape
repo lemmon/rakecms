@@ -74,12 +74,18 @@ function __scrape(array $o = [])
             ];
             echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
             // go through files
-            __tree($item, function($file, $link, $ns) use (&$site, $locale, $root, &$i, $o) {
+            __tree($item, function($file, $link, $ns, $local = FALSE) use (&$site, $locale, $root, &$i, $o) {
                 $path = '/' . ($i ? $link : '');
                 $type = $ns ?? '@pages';
                 $data = __data($file);
                 $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
-                echo " \033[1;30m-\033[0;37m " . $link . ($ns ? " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m" : '') . PHP_EOL;
+                echo " \033[1;30m-\033[0;37m " . $link;
+                if ($local) {
+                    echo " \033[0;36m{local}\033[0;37m";
+                }
+                if ($ns) {
+                    echo " \033[1;30m(\033[0;32m{$ns}\033[1;30m)\033[0;37m";
+                }
                 $site['tree'][$locale_id][$link] = $path;
                 $site['data'][$link] = [
                     'l10n' => $locale['id'],
@@ -93,6 +99,7 @@ function __scrape(array $o = [])
                 ];
                 $site[$type][$locale_id][] = $path;
                 $i++;
+                echo PHP_EOL;
             });
         }
         // save results
@@ -176,8 +183,12 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
             } else {
                 $type = strtolower($m[3]);
                 if ('txt' === $type) {
-                    $file_final = file_exists($_ = BASE_DIR . '/' . preg_replace('#^[^/]+#', 'local', substr($file, $bl + 1))) ? $_ : $file;
-                    $callback($file_final, join(($i or $ns or empty($level)) ? array_merge($level, [$slug]) : $level, '/'), $ns);
+                    $_link = join(($i or $ns or empty($level)) ? array_merge($level, [$slug]) : $level, '/');
+                    if (file_exists($_file = BASE_DIR . '/' . preg_replace('#^[^/]+#', 'local', substr($file, $bl + 1)))) {
+                        $callback($_file, $_link, $ns, TRUE);
+                    } else {
+                        $callback($file, $_link, $ns);
+                    }
                 } else {
                     continue;
                 }
