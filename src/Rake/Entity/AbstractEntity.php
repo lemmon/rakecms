@@ -138,6 +138,30 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
+    function isChildOf(self $parent)
+    {
+        return $_ = $this->getParent() and $_->getLink() === $parent->getLink();
+    }
+
+
+    function isDescendantOf(self $ancestor)
+    {
+        return $ancestor->getLink() . '/' === substr($this->getLink(), 0, strlen($ancestor->getLink()) + 1);
+    }
+
+
+    function isAncestorOf(self $descendant)
+    {
+        return $this->getLink() . '/' === substr($descendant->getLink(), 0, strlen($this->getLink()) + 1);
+    }
+
+
+    function isSiblingOf(self $sibling)
+    {
+        return preg_replace('#(^|/)[^/]+$#', '', $sibling->getLink()) === preg_replace('#(^|/)[^/]+$#', '', $this->getLink());
+    }
+
+
     function offsetExists($name)
     {
         return method_exists($this, 'get' . ucfirst($name)) || isset($this->_item['data'][$name]);
@@ -150,12 +174,6 @@ abstract class AbstractEntity implements \ArrayAccess
     }
 
 
-    function offsetSet($offset, $value)
-    {
-    }
-
-
-    function offsetUnset($offset)
-    {
-    }
+    function offsetSet($offset, $value) {}
+    function offsetUnset($offset) {}
 }
