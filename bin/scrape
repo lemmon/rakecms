@@ -8,11 +8,13 @@ use Symfony\Component\Yaml\Yaml;
 
 //
 // options
-$optin = getopt('bd:h', ['help', 'build', 'build-only', 'env:']);
+$optin = getopt('bd:ho:', ['help', 'build', 'build-only', 'ignore-local', 'env:']);
 $options = [
     'scrape' => TRUE,
+    'local' => TRUE,
     'build' => FALSE,
     'env' => NULL,
+    'dist' => 'dist',
 ];
 
 //
@@ -25,15 +27,20 @@ if (isset($optin['d'])) {
 
 require $base . '/bootstrap.php';
 
+//
+// options
 if (isset($optin['h']) or isset($optin['help'])) {
     __displayHelp();
-    exit(1);
 } else {
     if (isset($optin['b']) or isset($optin['build'])) $options['build'] = TRUE;
     if (isset($optin['build-only'])) $options = array_replace($options, ['scrape' => FALSE, 'build' => TRUE]);
-    if (isset($optin['env'])) $options['env'] = $optin['env'];
+    if (isset($optin['ignore-local'])) $options['local'] = FALSE;
+    if (!empty($optin['env'])) $options['env'] = $optin['env'];
+    if (!empty($optin['o'])) $options['dist'] = $optin['o'];
     __scrape($options);
 }
+
+exit(0);
 
 //
 // help
@@ -46,6 +53,8 @@ function __displayHelp()
     echo "\033[0;32m  -h, --help\033[0;37m     Display this help message", PHP_EOL;
     echo "\033[0;32m  -b, --build\033[0;37m    Build static html files", PHP_EOL;
     echo "\033[0;32m  -d <dir>\033[0;37m       Specify working directory", PHP_EOL;
+    echo "\033[0;32m  -o <dir>\033[0;37m       Specify output directory (default dist)", PHP_EOL;
+    echo "\033[0;32m  -ignore-local\033[0;37m  Ignore local data when scraping", PHP_EOL;
     echo "\033[0;37m";
 }
 
@@ -74,7 +83,7 @@ function __scrape(array $o = [])
             ];
             echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
             // go through files
-            __tree($item, function($file, $link, $ns, $local = FALSE) use (&$site, $locale, $root, &$i, $o) {
+            __tree($item, $o['local'], function($file, $link, $ns, $local = FALSE) use (&$site, $locale, $root, &$i, $o) {
                 $path = '/' . ($i ? $link : '');
                 $type = $ns ?? '@pages';
                 $data = __data($file);
@@ -116,7 +125,7 @@ function __scrape(array $o = [])
         // environment
         $env = $o['env'] ?? 'default';
         // dist dir
-        $base = BASE_DIR . '/dist/';
+        $base = BASE_DIR . '/' . $o['dist'] . '/';
         if (!is_dir($base)) {
             mkdir($base, 0755, TRUE);
         }
@@ -158,7 +167,7 @@ function __scrape(array $o = [])
 }
 
 // travest pages
-function __tree($dir, $callback, $level = [], $ns = NULL) {
+function __tree($dir, $local, $callback, $level = [], $ns = NULL) {
     $l = strlen($dir) + 1;
     $i = 0;
     $bl = strlen(BASE_DIR);
@@ -179,12 +188,12 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
             preg_match('/^(?:(\d{1,3})_)?([^\.]+)(?:\.(\w+))?/', $name, $m);
             $slug = strtolower(strtr($m[2], '_', '-'));
             if (is_dir($file)) {
-                __tree($file, $callback, array_merge($level, [$slug]), $ns);
+                __tree($file, $local, $callback, array_merge($level, [$slug]), $ns);
             } else {
                 $type = strtolower($m[3]);
                 if ('txt' === $type) {
                     $_link = join(($i or $ns or empty($level)) ? array_merge($level, [$slug]) : $level, '/');
-                    if (file_exists($_file = BASE_DIR . '/' . preg_replace('#^[^/]+#', 'local', substr($file, $bl + 1)))) {
+                    if ($local and file_exists($_file = BASE_DIR . '/' . preg_replace('#^[^/]+#', 'local', substr($file, $bl + 1)))) {
                         $callback($_file, $_link, $ns, TRUE);
                     } else {
                         $callback($file, $_link, $ns);
@@ -196,7 +205,7 @@ function __tree($dir, $callback, $level = [], $ns = NULL) {
             $i++;
         } else {
             $slug = substr($name, 1);
-            __tree($file, $callback, $level, $name);
+            __tree($file, $local, $callback, $level, $name);
         }
     }
 }
