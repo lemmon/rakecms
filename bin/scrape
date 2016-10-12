@@ -68,7 +68,7 @@ function __scrape(array $o = [])
     
     if ($o['scrape']) {
         // go through locales
-        foreach (glob($root . '/content/*') as $i => $item) {
+        foreach (glob($root . '/content/*') as $k => $item) {
             $i = 0;
             $base = basename($item);
             $locale_id = preg('/[a-z]+(_\w+)?/i', $base)[0];
@@ -79,12 +79,17 @@ function __scrape(array $o = [])
                 'id'      => $locale_id,
                 'dir'     => $base,
                 'active'  => !('_' == $base{0}),
-                'primary' => !(bool)$i,
+                'primary' => !(bool)$k,
             ];
             echo "\033[0;33mLocale:\033[0;37m " . $locale_id, PHP_EOL;
             // go through files
             __tree($item, $o['local'], function($file, $link, $ns, $local = FALSE) use (&$site, $locale, $root, &$i, $o) {
+                $prefix = $locale['primary'] ? '' : $locale['id'];
                 $path = '/' . ($i ? $link : '');
+                if ($prefix) {
+                    $link = $prefix . ($i ? '/' . $link : '');
+                    $path = '/' . $prefix . ($path !== '/' ? $path : '');
+                }
                 $type = $ns ?? '@pages';
                 $data = __data($file);
                 $locale_id = strtolower(strtr($locale['id'], ['_' => '-']));
@@ -99,7 +104,7 @@ function __scrape(array $o = [])
                 $site['data'][$link] = [
                     'l10n' => $locale['id'],
                     'link' => $link,
-                    'path' => $i ? $link . '.html' : '',
+                    'path' => ($i or $prefix) ? $link . '.html' : '',
                     'name' => ucwords(strtr(preg_replace('/^(\d+_)?([^\.]+)\..*$/', '$2', basename($file)), ['_' => ' '])),
                     'file' => substr($file, strlen($root) + 1),
                     'time' => filemtime($file),
