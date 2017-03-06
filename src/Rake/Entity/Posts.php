@@ -11,6 +11,10 @@ class Posts extends DataStack
     function getRecent($a = NULL, $b = NULL)
     {
         $res = $this->getArray();
+        // only past entries
+        $res = array_filter($res, function ($item) {
+            return date('Ymd', is_numeric($item['created']) ? intval($item['created']) : strtotime($item['created'])) <= date('Ymd');
+        });
         // sort by date created
         usort($res, function($a, $b){
             $a = is_numeric($a['created']) ? intval($a['created']) : strtotime($a['created']);
