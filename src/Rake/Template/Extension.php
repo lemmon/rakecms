@@ -89,7 +89,7 @@ class Extension extends \Twig_Extension
                         $res = preg_replace('/\x{00a0}/u', '&nbsp;', $res);                         // nbsp
                         $res = preg_replace('/(\b\w{1,' .$x. '})\s(?=\w)/um', '$1&nbsp;', $res);    // nbsp
                         $res = preg_replace('/"(.*)"/sumU', '&bdquo;$1&ldquo;', $res);              // quotes
-                        $res = preg_replace('/(?<![\-!])\-\-(?![\-\>])/', '&ndash;', $res);                 // dashes
+                        $res = preg_replace('/(?<![\-!])\-\-(?![\-\>])/', '&ndash;', $res);         // dashes
                         $res = preg_replace('/\s*\.{3,}/', '&hellip;', $res);                       // hellip
                         return $res;
                     }, $res);
