@@ -129,7 +129,11 @@ class Extension extends \Twig_Extension
                         $l = mb_strlen(html_entity_decode(strip_tags($res)));
                     } while ($l > $len);
                     if (FALSE !== strpos($res, '<')) {
-                        $res = (new \Tidy)->repairString($res, ['show-body-only' => TRUE], 'utf8');
+                        if (class_exists('\Tidy')) {
+                          $res = (new \Tidy)->repairString($res, ['show-body-only' => TRUE], 'utf8');
+                        } else {
+                          $res = strip_tags($res);
+                        }
                     }
                     do {
                         $res = preg_replace('#\s*<(\w+)[^>]*>\s*</\1>\s*#', '', $res, -1, $n);
