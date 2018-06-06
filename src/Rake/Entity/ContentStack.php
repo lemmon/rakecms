@@ -46,9 +46,9 @@ class ContentStack extends DataStack
     }
 
 
-    function current()
+    function current($yo = TRUE)
     {
-        return parent::current();
+        return parent::current($yo = TRUE);
     }
 
 
